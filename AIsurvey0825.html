@@ -1,0 +1,1467 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI活用レベル分析ダッシュボード</title>
+    
+    <!-- Google Fonts: M PLUS 1p -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+1p:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Chart.js and Datalabels Plugin -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+    
+    <style>
+        body {
+            font-family: 'M PLUS 1p', sans-serif;
+            background-color: #111827; /* Tailwind gray-900 */
+            color: #f3f4f6; /* Tailwind gray-100 */
+        }
+        .chart-container {
+            background-color: #1f2937; /* Tailwind gray-800 */
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .kpi-card {
+            background: linear-gradient(145deg, #1f2937, #2c3a4f);
+        }
+        select {
+            background-color: #374151; /* Tailwind gray-700 */
+            border-color: #4b5563; /* Tailwind gray-600 */
+        }
+        .summary-card {
+            background-color: #1f2937;
+            border-left: 4px solid #4f46e5; /* Indigo */
+        }
+        .summary-tag {
+            display: inline-block;
+            background-color: #374151;
+            color: #f3f4f6;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-weight: bold;
+            margin-right: 0.5rem;
+        }
+    </style>
+</head>
+<body class="p-4 sm:p-6 md:p-8">
+
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <header class="mb-8 text-center">
+            <h1 class="text-3xl sm:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-yellow-400">
+                AI活用レベル分析ダッシュボード
+            </h1>
+            <p class="text-gray-400 mt-2">人事局・人材開発部門 アンケート結果</p>
+        </header>
+
+        <!-- Filters -->
+        <div class="mb-8 p-4 bg-gray-800 rounded-lg shadow-md flex flex-wrap gap-4 items-center justify-center">
+            <h3 class="text-lg font-semibold text-gray-200 w-full text-center sm:w-auto">詳細フィルター:</h3>
+            <select id="departmentFilter" class="p-2 rounded-md text-white w-full sm:w-auto">
+                <option value="all">すべての部署</option>
+                <option value="人事室全体">人事室全体</option>
+                <option value="人材開発室全体">人材開発室全体</option>
+                <!-- Individual departments will be added by JS -->
+            </select>
+            <select id="roleFilter" class="p-2 rounded-md text-white w-full sm:w-auto">
+                <option value="all">すべての職名</option>
+            </select>
+            <select id="ageFilter" class="p-2 rounded-md text-white w-full sm:w-auto">
+                <option value="all">すべての年齢層</option>
+                <option value="20s">20代</option>
+                <option value="30s">30代</option>
+                <option value="40s">40代</option>
+                <option value="50s">50代</option>
+                <option value="60s">60代</option>
+            </select>
+            <select id="employeeTypeFilter" class="p-2 rounded-md text-white w-full sm:w-auto">
+                <option value="all">すべての従業員区分</option>
+            </select>
+        </div>
+
+        <!-- Section 1: Executive Summary -->
+        <section class="mb-10">
+            <h2 class="text-2xl font-bold mb-4 border-l-4 border-purple-500 pl-3">1. エグゼクティブサマリー</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="md:col-span-1 grid grid-cols-2 sm:grid-cols-1 gap-6">
+                    <div class="chart-container kpi-card flex flex-col justify-center items-center">
+                        <span class="text-gray-400 text-sm">回答者数</span>
+                        <p id="kpi-respondents" class="text-4xl font-bold text-yellow-400">0</p>
+                    </div>
+                    <div class="chart-container kpi-card flex flex-col justify-center items-center">
+                        <span class="text-gray-400 text-sm">平均スコア</span>
+                        <p id="kpi-avg-score" class="text-4xl font-bold text-yellow-400">0</p>
+                    </div>
+                </div>
+                <div class="chart-container md:col-span-2">
+                    <h3 class="text-xl font-semibold mb-2 text-center">AIレベル分布 (%)</h3>
+                    <div class="relative h-64 sm:h-80">
+                        <canvas id="aiLevelChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <hr class="border-gray-700 my-10">
+
+        <!-- Section 2: Behavior vs Knowledge -->
+        <section class="mb-10">
+            <h2 class="text-2xl font-bold mb-4 border-l-4 border-purple-500 pl-3">2. 「行動 vs 知識」 ポテンシャル分析</h2>
+            <div class="chart-container">
+                <h3 class="text-xl font-semibold mb-2 text-center">スキル構造 2x2マトリクス</h3>
+                <p class="text-gray-400 text-center mb-4 text-sm">黄線は全体の平均点 (固定)</p>
+                <div class="relative h-[600px]">
+                    <canvas id="skillMatrixChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <hr class="border-gray-700 my-10">
+
+        <!-- Section 3: Behavior Deep Dive -->
+        <section class="mb-10">
+            <h2 class="text-2xl font-bold mb-4 border-l-4 border-purple-500 pl-3">3. 「行動」の質的分析</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="chart-container">
+                    <h3 class="text-xl font-semibold mb-2 text-center">AI活用スタイル</h3>
+                    <div class="relative h-80">
+                        <canvas id="behaviorRadarChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <h3 class="text-xl font-semibold mb-2 text-center">業務改革スコア (効率化 vs 高度化)</h3>
+                    <div class="relative h-80">
+                        <canvas id="reformBarChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <hr class="border-gray-700 my-10">
+
+        <!-- Section 4: AI Level Details -->
+        <section class="mb-10">
+            <h2 class="text-2xl font-bold mb-4 border-l-4 border-purple-500 pl-3">4. AIレベル別 詳細分析</h2>
+            <p class="text-gray-400 mb-6 text-sm">各AIレベルに該当する人の詳細情報を確認できます</p>
+            
+            <!-- Level Tabs -->
+            <div class="flex flex-wrap gap-2 mb-6">
+                <button class="level-tab px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition-colors" data-level="E級 (Beginner)">
+                    E級 (Beginner)
+                </button>
+                <button class="level-tab px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition-colors" data-level="D級(Visiter)">
+                    D級 (Visiter)
+                </button>
+                <button class="level-tab px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition-colors" data-level="C級 (User)">
+                    C級 (User)
+                </button>
+                <button class="level-tab px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition-colors" data-level="B級 (Operator)">
+                    B級 (Operator)
+                </button>
+                <button class="level-tab px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 transition-colors" data-level="A級 (Partner)">
+                    A級 (Partner)
+                </button>
+            </div>
+            
+            <!-- Level Details Container -->
+            <div id="levelDetails" class="bg-gray-800 rounded-lg p-6">
+                <div class="text-center text-gray-400">
+                    レベルを選択してください
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 5: Analysis Summary -->
+        <section>
+            <h2 class="text-2xl font-bold mb-4 border-l-4 border-yellow-400 pl-3">5. 分析サマリー</h2>
+            <div class="space-y-8" id="analysisSummaryContainer">
+                <!-- Summaries will be injected here by script -->
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Footer with Category Explanations -->
+    <footer class="bg-gray-900 mt-20 py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-8">
+                <h3 class="text-2xl font-bold text-white mb-4">カテゴリー説明</h3>
+                <p class="text-gray-400">AI活用レベル評価における各カテゴリーの意味と意図について</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+                <!-- 活用の深さ -->
+                <div class="bg-gray-800 rounded-lg p-6">
+                    <div class="flex items-center mb-4">
+                        <div class="w-4 h-4 bg-blue-400 rounded-full mr-3"></div>
+                        <h4 class="text-lg font-semibold text-white">活用の深さ</h4>
+                    </div>
+                    <p class="text-gray-300 text-sm leading-relaxed">
+                        AIツールの基本的な使い方から応用的な活用まで、どの程度深く理解・実践しているかを評価。Q1〜Q2の質問で評価され、14点満点。
+                        AIツールの習熟度と実践力を示す指標です。
+                    </p>
+                </div>
+                
+                <!-- 効率化 -->
+                <div class="bg-gray-800 rounded-lg p-6">
+                    <div class="flex items-center mb-4">
+                        <div class="w-4 h-4 bg-orange-400 rounded-full mr-3"></div>
+                        <h4 class="text-lg font-semibold text-white">効率化</h4>
+                    </div>
+                    <p class="text-gray-300 text-sm leading-relaxed">
+                        業務の自動化や時短を目的としたAI活用。Q3〜Q6の質問で評価され、28点満点。
+                        日常業務の効率性向上に焦点を当てた指標です。
+                    </p>
+                </div>
+                
+                <!-- 高度化 -->
+                <div class="bg-gray-800 rounded-lg p-6">
+                    <div class="flex items-center mb-4">
+                        <div class="w-4 h-4 bg-yellow-400 rounded-full mr-3"></div>
+                        <h4 class="text-lg font-semibold text-white">高度化</h4>
+                    </div>
+                    <p class="text-gray-300 text-sm leading-relaxed">
+                        業務の質的向上や新たな価値創造を目的としたAI活用。Q7〜Q9の質問で評価され、21点満点。
+                        創造的・戦略的な業務改善に焦点を当てた指標です。
+                    </p>
+                </div>
+                
+                <!-- 共有・組織貢献 -->
+                <div class="bg-gray-800 rounded-lg p-6">
+                    <div class="flex items-center mb-4">
+                        <div class="w-4 h-4 bg-purple-400 rounded-full mr-3"></div>
+                        <h4 class="text-lg font-semibold text-white">共有・組織貢献</h4>
+                    </div>
+                    <p class="text-gray-300 text-sm leading-relaxed">
+                        個人のスキルを組織全体に波及させ、チーム力向上に貢献するAI活用。Q10の質問で評価され、7点満点。
+                        組織的な成長と知識共有に焦点を当てた指標です。
+                    </p>
+                </div>
+                
+                <!-- 知識 -->
+                <div class="bg-gray-800 rounded-lg p-6">
+                    <div class="flex items-center mb-4">
+                        <div class="w-4 h-4 bg-pink-400 rounded-full mr-3"></div>
+                        <h4 class="text-lg font-semibold text-white">知識</h4>
+                    </div>
+                    <p class="text-gray-300 text-sm leading-relaxed">
+                        AIに関して業務を行う際の共通言語となる基礎的な言葉の知識。Q11〜Q15の質問で評価され、30点満点。
+                        AI関連の専門用語や概念の理解度を示す指標です。
+                    </p>
+                </div>
+            </div>
+            
+            <div class="mt-8 text-center">
+                <p class="text-gray-500 text-sm">
+                    ※ 各カテゴリーの配点は、質問の重要度と業務への影響度を考慮して設定されています。
+                </p>
+            </div>
+        </div>
+    </footer>
+
+<script>
+// --- RAW DATA ---
+const rawData = `Title,EmployeeID,Q1_Score,Q2_Score,Q3_Score,Q4_Score,Q5_Score,Q6_Score,Q7_Score,Q8_Score,Q9_Score,Q10_Score,Q11_Score,Q12_Score,Q13_Score,Q14_Score,Q15_Score,TotalScore,AILevel,部門,部署,従業員区分,職名１,社会年齢・基準年齢
+安保 鉄也,3042,2,4,2,0,4,2,2,2,0,0,0,6,0,6,6,36,D級(Visiter),ＣＩ（出向）人事室,ＣＩ（出向）人事室,職員,エグゼクティブマネジメントプラニングディレクター,49
+大迫 佐江,2127,4,4,2,0,7,2,2,0,0,0,6,6,0,6,0,39,D級(Visiter),ＣＩ（出向）人事室,ＣＩ（出向）人事室,職員,チーフマネジメントプラニングディレクター,45
+荻野 綱重,3123,7,7,4,4,7,4,7,7,2,7,6,6,6,6,0,80,B級 (Operator),ＣＩ（出向）人事室,ＣＩ（出向）人事室ＨＲデータ戦略部,職員,チーフマネジメントプラニングディレクター,44
+三代 理恵子,89661,2,0,2,0,2,2,2,2,0,0,0,0,6,0,0,18,E級 (Beginner),ＣＩ（出向）人事室,ＣＩ（出向）人事室,職員,本社管理スタッフ,56
+大谷 こずえ,91654,0,0,0,0,2,0,2,2,0,0,6,0,6,6,0,24,D級(Visiter),ＣＩ（出向）人事室,ＣＩ（出向）人事室,職員,本社管理スタッフ,54
+粂川 未来,1023754,2,4,2,2,7,2,2,2,2,0,0,6,0,6,0,37,D級(Visiter),ＣＩ（出向）人事室,ＣＩ（出向）人事室計画部,職員,マネジメントプラニングディレクター,32
+手嶋 祐介,1065775,4,2,4,2,4,4,7,2,2,0,6,6,0,6,0,49,C級 (User),ＣＩ（出向）人事室,ＣＩ（出向）人事室計画部,職員,チーフマネジメントプラニングディレクター,42
+藤村 航,1071331,4,7,4,4,7,4,2,7,4,0,6,0,0,0,0,49,C級 (User),ＣＩ（出向）人事室,ＣＩ（出向）人事室計画部,職員,マネジメントプラニングディレクター,33
+中田 健斗,1018358,4,7,2,0,4,2,2,2,2,0,0,6,0,6,6,43,C級 (User),ＣＩ（出向）人事室,ＣＩ（出向）人事室計画部,職員,マネジメントプラニングディレクター,34
+山元 七菜子,1018389,4,4,0,2,4,2,4,2,2,0,6,6,0,0,0,36,D級(Visiter),ＣＩ（出向）人事室,ＣＩ（出向）人事室労務部,職員,マネジメントプラニングディレクター,34
+鈴木 公大,1071308,4,7,2,2,4,2,2,2,2,2,0,0,6,6,6,47,C級 (User),ＣＩ（出向）人事室,ＣＩ（出向）人事室計画部,職員,マネジメントプラニングディレクター,34
+稲葉 依里子,3109,4,7,4,2,7,4,4,2,2,4,0,0,0,0,0,40,D級(Visiter),ＣＩ（出向）人事室,ＣＩ（出向）人事室タレントアクイジション部,職員,マネジメントプラニングディレクター,44
+久慈 慎太郎,1054757,2,7,0,2,4,2,4,2,2,0,6,0,6,6,0,43,C級 (User),ＣＩ（出向）人事室,ＣＩ（出向）人事室タレントアクイジション部,職員,マネジメントプラニングディレクター,39
+佐伯 一磨,1020972,4,7,4,0,4,7,4,2,2,2,6,6,0,6,6,60,C級 (User),ＣＩ（出向）人事室,ＣＩ（出向）人事室計画部,職員,マネジメントプラニングディレクター,33
+江口 省悟,1071399,7,7,2,2,7,4,2,2,4,2,6,6,0,6,6,63,B級 (Operator),ＣＩ（出向）人事室,ＣＩ（出向）人事室労務部,職員,マネジメントプラニングディレクター,29
+坂本 理香,1065937,2,0,0,0,0,2,2,2,2,0,6,6,6,6,0,34,D級(Visiter),ＣＩ（出向）人事室,ＣＩ（出向）人事室計画部,職員,マネジメントプラニングディレクター,30
+長島 岳子,91659,4,7,4,4,7,2,2,2,2,0,6,6,0,6,0,52,C級 (User),ＣＩ（出向）人事室,ＣＩ（出向）人事室健康推進部,職員,チーフマネジメントプラニングディレクター,54
+百合岡 隆史,95094,2,2,2,2,4,2,2,2,2,0,6,6,0,0,0,32,D級(Visiter),ＣＩ（出向）人材開発室,ＣＩ（出向）人材開発室,職員,マネジメントプラニングディレクター,52
+横田 加奈恵,1044139,2,0,2,0,4,2,2,2,2,0,0,0,6,6,6,34,D級(Visiter),ＣＩ（出向）人事室,ＣＩ（出向）人事室健康推進部,職員,マネジメントプラニングディレクター,48
+岩崎 宏成,99002,0,2,0,0,2,2,2,2,0,0,0,0,6,0,0,16,E級 (Beginner),ＣＩ（出向）人事室,ＣＩ（出向）人事室健康推進部,職員,技工士Ｓ１級,53
+若尾 佳代,90669,2,4,2,4,4,4,2,2,0,0,0,0,0,0,6,30,D級(Visiter),ＣＩ（出向）人事室,ＣＩ（出向）人事室労務部,職員,チーフマネジメントプラニングディレクター,55
+住吉 美希,1063330,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,E級 (Beginner),ＣＩ（出向）人事室,ＣＩ（出向）人事室健康推進部,契約社員,契約社員,42
+郡司 佐弥香,1042989,2,0,2,0,0,2,0,2,0,0,0,6,0,6,6,26,D級(Visiter),ＣＩ（出向）人事室,ＣＩ（出向）人事室タレントアクイジション部,職員,マネジメントプラナー,27
+奥山 由佳,1062999,2,2,2,0,0,2,2,4,2,0,0,6,0,6,0,28,D級(Visiter),ＣＩ（出向）人事室,ＣＩ（出向）人事室健康推進部,契約社員,契約社員,40
+星崎 厚子,1070248,2,4,4,7,4,2,2,2,0,0,6,0,0,0,0,33,D級(Visiter),ＣＩ（出向）人事室,ＣＩ（出向）人事室ネクストキャリアデザイン部,契約社員,契約社員,60
+松本 祐依,1049565,2,2,0,4,0,2,2,2,2,0,0,0,0,6,0,22,D級(Visiter),ＣＩ（出向）人事室,ＣＩ（出向）人事室健康推進部,契約社員,契約社員,34
+白坂 太秀,1038616,4,7,2,2,4,2,2,2,2,2,6,6,0,6,0,47,C級 (User),ＣＩ（出向）人事室,ＣＩ（出向）人事室タレントアクイジション部,職員,マネジメントプラナー,28
+小野 萌恵,1069707,2,0,0,2,0,0,0,2,0,0,0,0,0,0,6,12,E級 (Beginner),ＣＩ（出向）人事室,ＣＩ（出向）人事室健康推進部,契約社員,契約社員,29
+播田 智章,97066,2,2,2,2,4,0,2,2,2,0,6,6,6,6,0,42,C級 (User),ＣＩ（出向）人材開発室,ＣＩ（出向）人材開発室,職員,チーフマネジメントプラニングディレクター,50
+井上 結渚,1056538,0,0,4,4,4,0,0,2,2,0,6,0,6,6,0,34,D級(Visiter),ＣＩ（出向）人事室,ＣＩ（出向）人事室健康推進部,契約社員,契約社員,27
+坂田 統悟,1063002,2,7,4,2,4,4,2,2,2,2,6,6,6,6,0,55,C級 (User),ＣＩ（出向）人事室,ＣＩ（出向）人事室労務部,職員,マネジメントプラニングディレクター,37
+市川 由季乃,1058860,2,4,0,0,2,2,2,4,0,0,6,6,6,6,0,40,D級(Visiter),ＣＩ（出向）人事室,ＣＩ（出向）人事室タレントアクイジション部,職員,マネジメントプラナー,24
+曄道 敬,1076367,7,7,4,7,7,7,7,7,7,2,6,6,0,6,0,80,B級 (Operator),ＣＩ（出向）人事室,ＣＩ（出向）人事室ネクストキャリアデザイン部,契約社員,契約社員,56
+志岐 麗,1015783,4,7,4,2,7,2,2,4,0,0,0,6,6,0,0,44,C級 (User),ＣＩ（出向）人事室,ＣＩ（出向）人事室労務部,職員,マネジメントプラニングディレクター,35
+鷲見 宇大,1070662,2,2,0,0,0,2,2,0,0,0,6,6,6,6,0,32,D級(Visiter),ＣＩ（出向）人事室,ＣＩ（出向）人事室タレントアクイジション部,直傭,マネジメントプラナー,35
+橋本 絵美,97638,4,0,0,2,4,2,2,2,0,0,0,0,6,0,6,28,D級(Visiter),ＣＩ（出向）人事室,ＣＩ（出向）人事室労務部,職員,マネジメントプラニングディレクター,50
+西森 菜央,1055714,2,7,4,4,4,2,2,0,2,0,6,6,0,0,6,45,C級 (User),ＣＩ（出向）人事室,ＣＩ（出向）人事室労務部,職員,マネジメントプラニングディレクター,36
+山口 裕史,1004107,4,7,4,2,4,4,4,4,2,0,6,0,0,0,0,41,C級 (User),ＣＩ（出向）人事室,ＣＩ（出向）人事室タレントアクイジション部,職員,チーフマネジメントプラニングディレクター,40
+平子 宣明,1071904,4,4,2,0,7,2,4,4,2,4,6,6,0,0,6,51,C級 (User),ＣＩ（出向）人事室,ＣＩ（出向）人事室ＨＲデータ戦略部,職員,マネジメントプラニングディレクター,36
+平澤 広子,1064545,2,7,2,0,7,2,2,2,2,2,0,6,6,6,0,46,C級 (User),ＣＩ（出向）人事室,ＣＩ（出向）人事室ネクストキャリアデザイン部,契約社員,契約社員,61
+久保田 俊郎,1066057,0,0,0,0,0,0,0,0,0,0,0,6,0,0,6,12,E級 (Beginner),ＣＩ（出向）人材開発室,ＣＩ（出向）人材開発室,契約社員,契約社員,61
+恒川 洋一,2039,2,2,2,2,4,2,2,2,2,2,0,0,0,6,0,28,D級(Visiter),ＣＩ（出向）人材開発室,ＣＩ（出向）人材開発室,職員,マネジメントプラニングディレクター,51
+白井 一真,1071713,2,2,2,0,0,2,0,2,2,0,0,0,0,6,0,18,E級 (Beginner),ＣＩ（出向）人事室,ＣＩ（出向）人事室タレントアクイジション部,職員,マネジメントプラナー,24
+坪井 克諭,97058,7,7,4,0,4,7,2,2,2,0,0,6,0,6,0,47,C級 (User),ＣＩ（出向）人材開発室,ＣＩ（出向）人材開発室,職員,チーフマネジメントプラニングディレクター,50
+下井 達夫,1069964,2,7,0,2,0,2,4,2,2,0,0,6,0,6,6,39,D級(Visiter),ＣＩ（出向）人材開発室,ＣＩ（出向）人材開発室,契約社員,契約社員,59
+薩摩 純平,3145,4,7,4,2,7,2,2,2,2,2,6,6,0,6,6,58,C級 (User),ＣＩ（出向）人材開発室,ＣＩ（出向）人材開発室グループキャリア開発グループ,職員,マネジメントプラニングディレクター,44
+秋山 祥子,1006511,4,4,2,2,4,2,2,4,2,0,6,6,6,6,6,56,C級 (User),ＣＩ（出向）人材開発室,ＣＩ（出向）人材開発室グループキャリア開発グループ,職員,マネジメントプラニングディレクター,39
+髙橋 道哉,1004069,2,2,0,0,0,2,0,2,0,0,6,6,6,6,0,32,D級(Visiter),ＣＩ（出向）人材開発室,ＣＩ（出向）人材開発室グループキャリア開発グループ,職員,マネジメントプラニングディレクター,40
+林下 雄也,5170,4,2,4,0,4,7,0,2,0,0,6,6,0,6,6,47,C級 (User),ＣＩ（出向）人材開発室,ＣＩ（出向）人材開発室職能開発グループ,職員,マネジメントプラニングディレクター,42
+山本 なつみ,89647,4,7,4,7,4,4,4,4,4,7,6,6,0,6,0,67,B級 (Operator),ＣＩ（出向）人材開発室,ＣＩ（出向）人材開発室職能開発グループ,職員,マネジメントプラニングディレクター,58
+宮原 美生,5184,4,7,4,2,4,7,2,2,2,0,0,6,0,0,6,46,C級 (User),ＣＩ（出向）人材開発室,ＣＩ（出向）人材開発室職能開発グループ,職員,マネジメントプラニングディレクター,42
+熊崎 優奈,1030347,4,7,7,4,7,7,7,7,4,2,6,6,6,6,0,80,B級 (Operator),ＣＩ（出向）人材開発室,ＣＩ（出向）人材開発室職能開発グループ,職員,マネジメントプラニングディレクター,30
+川原 美奈,1051404,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,E級 (Beginner),ＣＩ（出向）人材開発室,ＣＩ（出向）人材開発室職能開発グループ,契約社員,契約社員,63
+村尾 洋介,1051405,2,2,2,0,0,0,0,2,0,0,6,6,0,6,6,32,D級(Visiter),ＣＩ（出向）人材開発室,ＣＩ（出向）人材開発室職能開発グループ,契約社員,契約社員,63
+豊田 理佐,1023358,7,7,4,4,4,4,2,2,2,2,6,0,0,6,0,50,C級 (User),ＣＩ（出向）人材開発室,ＣＩ（出向）人材開発室グループカルチャー創生グループ,職員,マネジメントプラニングディレクター,53
+荒井 自如,1015761,2,4,2,0,4,2,2,2,0,0,6,6,0,6,0,36,D級(Visiter),ＣＩ（出向）人材開発室,ＣＩ（出向）人材開発室グループカルチャー創生グループ,職員,マネジメントプラニングディレクター,35
+黒沢 梨恵,1067066,4,7,4,7,2,4,4,2,2,2,6,0,0,6,0,50,C級 (User),ＣＩ（出向）人材開発室,ＣＩ（出向）人材開発室グループカルチャー創生グループ,職員,マネジメントプラナー,27
+二階 晋平,4154,7,7,7,7,7,7,7,7,4,2,6,6,6,6,6,92,A級 (Partner),ＣＩ（出向）人材開発室,ＣＩ（出向）人材開発室成長戦略開発グループ,職員,チーフマネジメントプラニングディレクター,43
+佐藤 将秀,1004123,7,4,2,0,2,2,0,2,2,2,6,0,0,6,0,35,D級(Visiter),ＣＩ（出向）人材開発室,ＣＩ（出向）人材開発室成長戦略開発グループ,職員,マネジメントプラニングディレクター,40
+今井 英子,92623,4,7,4,4,7,2,2,7,4,2,6,6,0,6,0,61,B級 (Operator),ＣＩ（出向）人材開発室,ＣＩ（出向）人材開発室成長戦略開発グループ,職員,マネジメントプラニングディレクター,55
+山上 早恵,1034850,2,2,2,0,2,2,2,2,2,0,6,6,0,6,0,34,D級(Visiter),ＣＩ（出向）人材開発室,ＣＩ（出向）人材開発室成長戦略開発グループ,職員,マネジメントプラニングディレクター,44
+佐藤 由奈,1013273,4,7,2,4,4,2,0,2,2,0,6,6,0,6,0,45,C級 (User),ＣＩ（出向）人材開発室,ＣＩ（出向）人材開発室成長戦略開発グループ,職員,マネジメントプラニングディレクター,36`;
+
+// --- GLOBAL VARIABLES ---
+let processedData = [];
+let charts = {};
+let overallAverages = {};
+
+// --- UTILITY FUNCTIONS ---
+function getAverage(data, field) {
+    if (!data || data.length === 0) return 0;
+    const sum = data.reduce((acc, person) => {
+        const value = person[field];
+        return acc + (typeof value === 'number' && !isNaN(value) ? value : 0);
+    }, 0);
+    return sum / data.length;
+}
+
+// --- DATA PROCESSING ---
+function parseData(rawData) {
+    const lines = rawData.trim().split('\n');
+    const headers = lines[0].split(',').map(h => h.trim());
+    return lines.slice(1).map(line => {
+        const values = line.split(',').map(v => v.trim());
+        let entry = {};
+        headers.forEach((header, i) => { entry[header] = values[i]; });
+        return entry;
+    });
+}
+
+function processData(data) {
+    return data.map(d => {
+        const q = (name) => parseInt(d[name], 10) || 0;
+        const age = parseInt(d['社会年齢・基準年齢'], 10);
+        // 年齢が0の場合も有効なデータとして扱う（年齢がnullやundefinedの場合のみ除外）
+        if (age === null || age === undefined || !d['Title'] || d['Title'] === '-') return null;
+
+        let mainGroup = null;
+        const division = d['部門'];
+        if (division && division.includes('人材開発室')) {
+            mainGroup = '人材開発室';
+        } else if (division && division.includes('人事室')) {
+            mainGroup = '人事室';
+        }
+
+        // 各セクションの合計点（満点制限付き）
+        const depthScore = Math.min(q('Q1_Score') + q('Q2_Score'), 14); // Q1, Q2: 活用の深さ (14点満点)
+        if (q('Q1_Score') + q('Q2_Score') > 14) {
+            console.warn(`⚠️ ${d['Title']}: 活用の深さが14点を超過しています (${q('Q1_Score') + q('Q2_Score')}点)`);
+        }
+        
+        const efficiencyScore = Math.min(q('Q3_Score') + q('Q4_Score') + q('Q5_Score') + q('Q6_Score'), 28); // Q3, Q4, Q5, Q6: 効率化 (28点満点)
+        if (q('Q3_Score') + q('Q4_Score') + q('Q5_Score') + q('Q6_Score') > 28) {
+            console.warn(`⚠️ ${d['Title']}: 効率化が28点を超過しています (${q('Q3_Score') + q('Q4_Score') + q('Q5_Score') + q('Q6_Score')}点)`);
+        }
+        
+        const advancementScore = Math.min(q('Q7_Score') + q('Q8_Score') + q('Q9_Score'), 21); // Q7, Q8, Q9: 高度化 (21点満点)
+        if (q('Q7_Score') + q('Q8_Score') + q('Q9_Score') > 21) {
+            console.warn(`⚠️ ${d['Title']}: 高度化が21点を超過しています (${q('Q7_Score') + q('Q8_Score') + q('Q9_Score')}点)`);
+        }
+        
+        const contributionScore = Math.min(q('Q10_Score'), 7); // Q10: 共有・組織貢献 (7点満点)
+        if (q('Q10_Score') > 7) {
+            console.warn(`⚠️ ${d['Title']}: 共有・組織貢献が7点を超過しています (${q('Q10_Score')}点)`);
+        }
+
+        // スコアの計算 - HRdata.csvのTotalScore列を使用
+        const totalScore = q('TotalScore');
+        
+        // 行動スコア（Q1〜Q10の合計）- 70点満点
+        const behaviorScore = q('Q1_Score') + q('Q2_Score') + q('Q3_Score') + q('Q4_Score') + q('Q5_Score') + q('Q6_Score') + q('Q7_Score') + q('Q8_Score') + q('Q9_Score') + q('Q10_Score');
+        
+        // 知識スコア（Q11〜Q15の合計）- 30点満点
+        const knowledgeScore = q('Q11_Score') + q('Q12_Score') + q('Q13_Score') + q('Q14_Score') + q('Q15_Score');
+
+        // 不正なデータをフィルタリング（スコアが0以下や異常に高い値、名前が空の場合）
+        if (behaviorScore < 0 || knowledgeScore < 0 || 
+            behaviorScore > 100 || knowledgeScore > 100 || 
+            !d['Title'].trim()) {
+            return null;
+        }
+
+        // スコアの検証と調整
+        const calculatedTotal = behaviorScore + knowledgeScore;
+        if (Math.abs(calculatedTotal - totalScore) > 1) {
+            console.log(`Score mismatch for ${d['Title']}: CSV Total=${totalScore}, Calculated=${calculatedTotal}`);
+            
+            // 比率を保ってスコアを調整
+            if (calculatedTotal > 0) {
+                const ratio = totalScore / calculatedTotal;
+                const adjustedBehaviorScore = Math.round(behaviorScore * ratio);
+                const adjustedKnowledgeScore = Math.round(knowledgeScore * ratio);
+                
+                // 個別カテゴリのスコアも同じ比率で調整
+                const adjustedDepthScore = Math.round(depthScore * ratio);
+                const adjustedEfficiencyScore = Math.round(efficiencyScore * ratio);
+                const adjustedAdvancementScore = Math.round(advancementScore * ratio);
+                const adjustedContributionScore = Math.round(contributionScore * ratio);
+                
+                // 調整後の合計がTotalScoreと一致するように微調整
+                const finalSum = adjustedBehaviorScore + adjustedKnowledgeScore;
+                if (finalSum !== totalScore) {
+                    // 知識スコアを調整して合計を合わせる
+                    const finalKnowledgeScore = totalScore - adjustedBehaviorScore;
+                    console.log(`Final adjustment for ${d['Title']}: Behavior=${adjustedBehaviorScore}, Knowledge=${finalKnowledgeScore}, Total=${totalScore}`);
+                    
+                    return {
+                        name: d['Title'].trim(),
+                        department: d['部署'],
+                        mainGroup: mainGroup,
+                        employeeType: d['従業員区分'],
+                        role: d['職名１'],
+                        age: age,
+                        aiLevel: d['AILevel'],
+                        totalScore: totalScore,
+                        behaviorScore: adjustedBehaviorScore,
+                        knowledgeScore: finalKnowledgeScore,
+                        depthScore: adjustedDepthScore,
+                        efficiencyScore: adjustedEfficiencyScore,
+                        advancementScore: adjustedAdvancementScore,
+                        contributionScore: adjustedContributionScore,
+                    };
+                }
+                
+                console.log(`Adjusted: Behavior=${adjustedBehaviorScore}, Knowledge=${adjustedKnowledgeScore}`);
+                
+                // 調整されたスコアを使用
+                return {
+                    name: d['Title'].trim(),
+                    department: d['部署'],
+                    mainGroup: mainGroup,
+                    employeeType: d['従業員区分'],
+                    role: d['職名１'],
+                    age: age,
+                    aiLevel: d['AILevel'],
+                    totalScore: totalScore,
+                    behaviorScore: adjustedBehaviorScore,
+                    knowledgeScore: adjustedKnowledgeScore,
+                    depthScore: adjustedDepthScore,
+                    efficiencyScore: adjustedEfficiencyScore,
+                    advancementScore: adjustedAdvancementScore,
+                    contributionScore: adjustedContributionScore,
+                };
+            }
+        }
+
+        // 通常のスコアを使用
+        return {
+            name: d['Title'].trim(),
+            department: d['部署'],
+            mainGroup: mainGroup,
+            employeeType: d['従業員区分'],
+            role: d['職名１'],
+            age: age,
+            aiLevel: d['AILevel'],
+            totalScore: totalScore,
+            behaviorScore: behaviorScore,
+            knowledgeScore: knowledgeScore,
+            depthScore: depthScore,
+            efficiencyScore: efficiencyScore,
+            advancementScore: advancementScore,
+            contributionScore: contributionScore,
+        };
+    }).filter(d => d !== null && d.mainGroup !== null);
+}
+
+// --- CHARTING FUNCTIONS ---
+function setupCharts() {
+    console.log('setupCharts called');
+    Chart.defaults.color = '#cbd5e1';
+    Chart.defaults.borderColor = '#475569';
+    Chart.defaults.font.family = "'M PLUS 1p', sans-serif";
+    
+    // ChartDataLabelsプラグインを確実に登録
+    Chart.register(ChartDataLabels);
+    console.log('ChartDataLabels plugin registered');
+
+    const commonTooltip = {
+        enabled: true, backgroundColor: 'rgba(31, 41, 55, 0.9)', titleColor: '#f3f4f6',
+        bodyColor: '#d1d5db', borderColor: '#4b5563', borderWidth: 1, padding: 10, displayColors: false,
+    };
+
+    // 1. AI Level Chart (Donut)
+    const aiLevelCtx = document.getElementById('aiLevelChart').getContext('2d');
+    charts.aiLevel = new Chart(aiLevelCtx, {
+        type: 'doughnut',
+        data: { labels: [], datasets: [{ data: [], backgroundColor: [] }] },
+        options: {
+            responsive: true, maintainAspectRatio: false, cutout: '60%',
+            plugins: {
+                legend: { position: 'right' },
+                tooltip: { ...commonTooltip, displayColors: true },
+                datalabels: {
+                    formatter: (value, ctx) => {
+                        const total = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                        if (total === 0) return '0%';
+                        return (value / total * 100).toFixed(0) + '%';
+                    },
+                    color: '#fff',
+                }
+            },
+        }
+    });
+    console.log('AI Level chart created');
+
+    // 2. Skill Matrix Chart (Scatter)
+    const skillMatrixCtx = document.getElementById('skillMatrixChart').getContext('2d');
+    charts.skillMatrix = new Chart(skillMatrixCtx, {
+        data: {
+            datasets: [
+                { 
+                    type: 'scatter', 
+                    label: '従業員', 
+                    data: [], 
+                    backgroundColor: 'rgba(192, 132, 252, 0.7)', 
+                    pointRadius: 6
+                },
+                { type: 'line', label: '行動スコア平均', data: [], borderColor: '#facc15', borderWidth: 2, pointRadius: 0, fill: false, borderDash: [5, 5] },
+                { type: 'line', label: '知識スコア平均', data: [], borderColor: '#facc15', borderWidth: 2, pointRadius: 0, fill: false, borderDash: [5, 5] }
+            ]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            scales: {
+                x: { title: { display: true, text: '知識スコア' }, beginAtZero: true },
+                y: { title: { display: true, text: '行動スコア' }, beginAtZero: true }
+            },
+            plugins: {
+                legend: { display: false },
+                datalabels: {
+                    display: true,
+                    color: '#ffffff',
+                    font: {
+                        size: 10,
+                        weight: 'bold'
+                    },
+                    formatter: function(value, context) {
+                        // スキャッターデータの場合は名前を表示
+                        if (context.dataset.type === 'scatter' && context.raw && context.raw.name) {
+                            return context.raw.name;
+                        }
+                        // 数値データの場合のみtoFixedを適用
+                        if (typeof value === 'number' && !isNaN(value) && isFinite(value)) {
+                            return value.toFixed(1);
+                        }
+                        // その他の場合は空文字を返す
+                        return '';
+                    },
+                    anchor: 'center',
+                    align: 'center',
+                    offset: 8
+                },
+                tooltip: {
+                    ...commonTooltip,
+                    callbacks: {
+                        label: function(context) {
+                            if (context.dataset.type === 'scatter') {
+                                const name = context.raw.name;
+                                const behavior = context.parsed.y.toFixed(0);
+                                const knowledge = context.parsed.x.toFixed(0);
+                                return `行動: ${behavior}  知識: ${knowledge}  |  ${name}`;
+                            }
+                            if(context.dataset.label.includes('行動スコア')){
+                                return `全体の平均行動スコア: ${context.parsed.y.toFixed(0)}`;
+                            }
+                             if(context.dataset.label.includes('知識スコア')){
+                                return `全体の平均知識スコア: ${context.parsed.x.toFixed(0)}`;
+                            }
+                            return null;
+                        }
+                    }
+                }
+            }
+        }
+    });
+    console.log('Skill Matrix chart created');
+    
+    // 3. Behavior Radar Chart
+    const behaviorRadarCtx = document.getElementById('behaviorRadarChart').getContext('2d');
+    charts.behaviorRadar = new Chart(behaviorRadarCtx, {
+        type: 'radar',
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            scales: {
+                r: {
+                    beginAtZero: true,
+                    max: 28, // 効率化の満点28点に合わせて調整
+                    min: 0,
+                    ticks: { 
+                        stepSize: 7, // 7点刻みで目盛りを表示（28÷4=7）
+                        display: false,  // 目盛りの数値を非表示
+                        color: '#e5e7eb',
+                        font: {
+                            size: 10
+                        }
+                    },
+                    grid: {
+                        display: true,  // グリッド線は表示
+                        color: 'rgba(156, 163, 175, 0.3)',  // 薄いグレー
+                        lineWidth: 1
+                    },
+                    pointLabels: {
+                        display: true,  // 軸ラベルは表示
+                        color: '#e5e7eb',  // 薄い白
+                        font: {
+                            size: 12,
+                            weight: 'bold'
+                        }
+                    }
+                }
+            },
+            plugins: {
+                tooltip: { ...commonTooltip },
+                legend: { position: 'top' },
+                datalabels: {
+                    display: true,
+                    color: '#ffffff',
+                    font: {
+                        size: 12,
+                        weight: 'bold'
+                    },
+                    formatter: function(value) {
+                        // 数値かどうかをチェックしてからtoFixedを適用
+                        if (typeof value === 'number' && !isNaN(value) && isFinite(value)) {
+                            return value.toFixed(1);
+                        }
+                        return '';
+                    },
+                    anchor: 'end',
+                    align: 'top',
+                    offset: 8
+                }
+            }
+        },
+        data: {
+            labels: ['活用の深さ\n(14点満点)', '効率化\n(28点満点)', '高度化\n(21点満点)', '共有・組織貢献\n(7点満点)'],
+            datasets: [
+                {
+                    label: '全部署平均',
+                    data: [],
+                    backgroundColor: 'rgba(156, 163, 175, 0.1)',
+                    borderColor: 'rgba(156, 163, 175, 0.6)',
+                    borderWidth: 1,
+                    pointBackgroundColor: 'rgba(156, 163, 175, 0.6)',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: 'rgba(156, 163, 175, 0.6)',
+                    pointRadius: 3,
+                    pointHoverRadius: 5
+                },
+                {
+                    label: '対象グループ平均',
+                    data: [],
+                    backgroundColor: 'rgba(192, 132, 252, 0.2)',
+                    borderColor: 'rgba(192, 132, 252, 1)',
+                    borderWidth: 3,
+                    pointBackgroundColor: 'rgba(192, 132, 252, 1)',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: 'rgba(192, 132, 252, 1)',
+                    pointRadius: 5,
+                    pointHoverRadius: 7
+                }
+            ]
+        }
+    });
+    console.log('Behavior Radar chart created');
+
+    // 4. Reform Bar Chart
+    const reformBarCtx = document.getElementById('reformBarChart').getContext('2d');
+    charts.reformBar = new Chart(reformBarCtx, {
+        type: 'bar',
+        data: { labels: ['業務改革'], datasets: [
+                { label: '効率化', data: [0], backgroundColor: 'rgba(250, 204, 21, 0.7)' },
+                { label: '高度化', data: [0], backgroundColor: 'rgba(168, 85, 247, 0.7)' }
+            ]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            scales: { 
+                y: { 
+                    beginAtZero: true, 
+                    ticks: { 
+                        precision: 1,
+                        stepSize: 5, // 5点刻みで目盛りを表示
+                        color: '#e5e7eb',
+                        font: {
+                            size: 10
+                        }
+                    },
+                    max: 30, // 効率化の満点28点に合わせて調整
+                    grid: {
+                        display: true,
+                        color: 'rgba(156, 163, 175, 0.3)',
+                        lineWidth: 1
+                    }
+                },
+                x: {
+                    grid: {
+                        display: true,
+                        color: 'rgba(156, 163, 175, 0.3)',
+                        lineWidth: 1
+                    }
+                }
+            },
+            plugins: { 
+                legend: { position: 'top' }, 
+                tooltip: commonTooltip 
+            }
+        }
+    });
+    console.log('Reform Bar chart created');
+    
+    console.log('All charts setup completed');
+}
+
+// カスタムラベル描画関数
+function drawCustomLabels() {
+    if (!charts.skillMatrix || !charts.skillMatrix.data) return;
+    
+    const chart = charts.skillMatrix;
+    const ctx = chart.ctx;
+    const data = chart.data.datasets[0].data;
+    
+    if (!data || data.length === 0) return;
+    
+    // 既存のラベルをクリア
+    const canvas = document.getElementById('skillMatrixChart');
+    const container = canvas.parentElement;
+    const existingLabels = container.querySelectorAll('.custom-label');
+    existingLabels.forEach(label => label.remove());
+    
+    // 新しいラベルを作成
+    data.forEach((point, index) => {
+        if (point && point.name && typeof point.x === 'number' && typeof point.y === 'number') {
+            const label = document.createElement('div');
+            label.className = 'custom-label';
+            label.textContent = point.name;
+            label.style.cssText = `
+                position: absolute;
+                color: white;
+                font-size: 10px;
+                font-weight: bold;
+                font-family: 'M PLUS 1p', sans-serif;
+                pointer-events: none;
+                z-index: 1000;
+                text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+            `;
+            
+            // 座標を計算
+            const xScale = chart.scales.x;
+            const yScale = chart.scales.y;
+            const x = xScale.getPixelForValue(point.x);
+            const y = yScale.getPixelForValue(point.y);
+            
+            label.style.left = (x - 20) + 'px';
+            label.style.top = (y - 20) + 'px';
+            
+            container.appendChild(label);
+        }
+    });
+}
+
+// --- UI & FILTERING ---
+function populateFilters(data) {
+    const depFilter = document.getElementById('departmentFilter');
+    while (depFilter.options.length > 3) {
+        depFilter.remove(3);
+    }
+    
+    const departments = [...new Set(data.map(d => d.department))].sort();
+    const roles = [...new Set(data.map(d => d.role))].sort();
+    const employeeTypes = [...new Set(data.map(d => d.employeeType))].sort();
+
+    departments.forEach(d => depFilter.innerHTML += `<option value="${d}">${d}</option>`);
+    
+    const roleFilter = document.getElementById('roleFilter');
+    roleFilter.innerHTML = '<option value="all">すべての職名</option>';
+    roles.forEach(r => roleFilter.innerHTML += `<option value="${r}">${r}</option>`);
+
+    const empTypeFilter = document.getElementById('employeeTypeFilter');
+    empTypeFilter.innerHTML = '<option value="all">すべての従業員区分</option>';
+    employeeTypes.forEach(e => empTypeFilter.innerHTML += `<option value="${e}">${e}</option>`);
+}
+
+function getFilteredData() {
+    const departmentFilterValue = document.getElementById('departmentFilter').value;
+    const roleFilterValue = document.getElementById('roleFilter').value;
+    const ageFilterValue = document.getElementById('ageFilter').value;
+    const employeeTypeFilterValue = document.getElementById('employeeTypeFilter').value;
+
+    console.log('Filter values:', {
+        department: departmentFilterValue,
+        role: roleFilterValue,
+        age: ageFilterValue,
+        employeeType: employeeTypeFilterValue
+    });
+
+    const filtered = processedData.filter(d => {
+        let depMatch = false;
+        if (departmentFilterValue === 'all') {
+            depMatch = true;
+        } else if (departmentFilterValue === '人事室全体') {
+            depMatch = d.mainGroup === '人事室';
+        } else if (departmentFilterValue === '人材開発室全体') {
+            depMatch = d.mainGroup === '人材開発室';
+        } else {
+            depMatch = d.department === departmentFilterValue;
+        }
+
+        const ageGroup = (d.age < 30) ? '20s' : (d.age < 40) ? '30s' : (d.age < 50) ? '40s' : (d.age < 60) ? '50s' : '60s';
+        const roleMatch = roleFilterValue === 'all' || d.role === roleFilterValue;
+        const ageMatch = ageFilterValue === 'all' || ageGroup === ageFilterValue;
+        const empTypeMatch = employeeTypeFilterValue === 'all' || d.employeeType === employeeTypeFilterValue;
+
+        const result = depMatch && roleMatch && ageMatch && empTypeMatch;
+        if (result) {
+            console.log('Data point matched:', d.name, d.department, d.role, ageGroup, d.employeeType);
+        }
+
+        return result;
+    });
+
+    console.log('Filtered data result:', filtered.length, 'rows');
+    return filtered;
+}
+
+// --- UPDATE FUNCTIONS ---
+function updateDashboard() {
+    console.log('updateDashboard called');
+    const filteredData = getFilteredData();
+    console.log('Filtered data:', filteredData.length, 'rows');
+    
+    if (filteredData.length === 0) {
+        console.warn('No data after filtering');
+        return;
+    }
+    
+    updateSummarySection(filteredData);
+    updateSkillMatrixChart(filteredData);
+    updateBehaviorCharts(filteredData);
+    
+    // AIレベル別詳細表示の更新
+    const selectedLevel = document.querySelector('.level-tab.active')?.getAttribute('data-level') || 'E級 (Beginner)';
+    showLevelDetails(selectedLevel);
+    
+    console.log('Dashboard update completed');
+}
+
+function updateSummarySection(data) {
+    console.log('updateSummarySection called with', data.length, 'rows');
+    document.getElementById('kpi-respondents').textContent = data.length;
+    document.getElementById('kpi-avg-score').textContent = getAverage(data, 'totalScore').toFixed(0);
+
+    const levelCounts = data.reduce((acc, d) => {
+        acc[d.aiLevel] = (acc[d.aiLevel] || 0) + 1;
+        return acc;
+    }, {});
+    const levelOrder = ['E級 (Beginner)', 'D級(Visiter)', 'C級 (User)', 'B級 (Operator)', 'A級 (Partner)'];
+    const sortedLabels = levelOrder.filter(l => levelCounts[l]);
+    charts.aiLevel.data.labels = sortedLabels;
+    charts.aiLevel.data.datasets[0].data = sortedLabels.map(label => levelCounts[label]);
+    charts.aiLevel.data.datasets[0].backgroundColor = ['#6b7280', '#3b82f6', '#facc15', '#a855f7', '#ef4444'];
+    charts.aiLevel.update();
+    console.log('Summary section updated');
+}
+
+function updateSkillMatrixChart(data) {
+    console.log('updateSkillMatrixChart called with', data.length, 'rows');
+    // 有効なデータのみをフィルタリング
+    const validData = data.filter(d => 
+        d.name && 
+        d.name.trim() !== '' && 
+        typeof d.behaviorScore === 'number' && 
+        typeof d.knowledgeScore === 'number' &&
+        d.behaviorScore >= 0 && 
+        d.knowledgeScore <= 100
+    );
+    console.log('Valid data for matrix:', validData.length, 'rows');
+
+    // スコアの検証
+    validData.forEach(d => {
+        const calculatedSum = d.behaviorScore + d.knowledgeScore;
+        if (Math.abs(calculatedSum - d.totalScore) > 1) {
+            console.log(`Matrix score verification for ${d.name}: Behavior=${d.behaviorScore}, Knowledge=${d.knowledgeScore}, Sum=${calculatedSum}, TotalScore=${d.totalScore}`);
+        }
+    });
+
+    charts.skillMatrix.data.datasets[0].data = validData.map(d => ({ 
+        x: d.knowledgeScore, 
+        y: d.behaviorScore, 
+        name: d.name 
+    }));
+    
+    const yMax = overallAverages.maxBehavior * 1.1;
+    const xMax = overallAverages.maxKnowledge * 1.1;
+    charts.skillMatrix.options.scales.y.max = yMax;
+    charts.skillMatrix.options.scales.x.max = xMax;
+    
+    charts.skillMatrix.data.datasets[1].data = [{x: 0, y: overallAverages.behavior}, {x: xMax, y: overallAverages.behavior}];
+    charts.skillMatrix.data.datasets[2].data = [{x: overallAverages.knowledge, y: 0}, {x: overallAverages.knowledge, y: yMax}];
+
+    // Chart.jsのバージョンによって戻り値が異なるため、安全に処理
+    const updateResult = charts.skillMatrix.update('none');
+    if (updateResult && typeof updateResult.then === 'function') {
+        // Promiseが返される場合
+        updateResult.then(() => {
+            setTimeout(drawCustomLabels, 100);
+            console.log('Skill matrix chart updated');
+        });
+    } else {
+        // Promiseが返されない場合
+        setTimeout(drawCustomLabels, 100);
+        console.log('Skill matrix chart updated (no Promise)');
+    }
+}
+
+function updateBehaviorCharts(data) {
+    console.log('updateBehaviorCharts called with', data.length, 'rows');
+    const avg = (key) => getAverage(data, key);
+    
+    // 対象グループの各スコアの平均値を計算
+    const depthAvg = avg('depthScore');
+    const efficiencyAvg = avg('efficiencyScore');
+    const advancementAvg = avg('advancementScore');
+    const contributionAvg = avg('contributionScore');
+    
+    console.log('Target group averages:', {
+        depth: depthAvg,
+        efficiency: efficiencyAvg,
+        advancement: advancementAvg,
+        contribution: contributionAvg
+    });
+    
+    // 全部署の各スコアの平均値を計算
+    const overallDepthAvg = getAverage(processedData, 'depthScore');
+    const overallEfficiencyAvg = getAverage(processedData, 'efficiencyScore');
+    const overallAdvancementAvg = getAverage(processedData, 'advancementScore');
+    const overallContributionAvg = getAverage(processedData, 'contributionScore');
+    
+    console.log('Overall averages:', {
+        depth: overallDepthAvg,
+        efficiency: overallEfficiencyAvg,
+        advancement: overallAdvancementAvg,
+        contribution: overallContributionAvg
+    });
+    
+    // レーダーチャートのデータを更新（全部署平均を先に、対象グループ平均を後に）
+    const overallRadarData = [overallDepthAvg, overallEfficiencyAvg, overallAdvancementAvg, overallContributionAvg].map(v => v.toFixed(1));
+    const targetRadarData = [depthAvg, efficiencyAvg, advancementAvg, contributionAvg].map(v => v.toFixed(1));
+    
+    console.log('Overall radar data:', overallRadarData);
+    console.log('Target radar data:', targetRadarData);
+    
+    charts.behaviorRadar.data.datasets[0].data = overallRadarData; // 全部署平均
+    charts.behaviorRadar.data.datasets[1].data = targetRadarData;  // 対象グループ平均
+    charts.behaviorRadar.update();
+    console.log('Radar chart updated with both datasets');
+    
+    // 業務改革スコアのグラフは小数点以下1桁まで表示
+    const efficiencyScore = parseFloat(efficiencyAvg).toFixed(1);
+    const advancementScore = parseFloat(advancementAvg).toFixed(1);
+    
+    console.log('Reform bar scores:', {
+        efficiency: efficiencyScore,
+        advancement: advancementScore
+    });
+    
+    // データセットを更新
+    charts.reformBar.data.datasets[0].data = [parseFloat(efficiencyScore)];
+    charts.reformBar.data.datasets[1].data = [parseFloat(advancementScore)];
+    
+    console.log('Reform bar datasets before update:', {
+        efficiency: charts.reformBar.data.datasets[0].data,
+        advancement: charts.reformBar.data.datasets[1].data
+    });
+    
+    charts.reformBar.update();
+    console.log('Reform bar chart updated successfully');
+    console.log('Behavior charts update completed');
+}
+
+// --- ANALYSIS SUMMARY TEXT ---
+function generateSummaryText(data, groupName) {
+    try {
+        // 基本統計
+        const avgTotal = getAverage(data, 'totalScore').toFixed(0);
+        const avgEfficiency = getAverage(data, 'efficiencyScore').toFixed(1);
+        const avgAdvancement = getAverage(data, 'advancementScore').toFixed(1);
+        const avgContribution = getAverage(data, 'contributionScore').toFixed(1);
+        
+        console.log('Averages calculated:', { avgTotal, avgEfficiency, avgAdvancement, avgContribution });
+        
+        // レベル分布の分析
+        const levelCounts = data.reduce((acc, d) => {
+            acc[d.aiLevel] = (acc[d.aiLevel] || 0) + 1;
+            return acc;
+        }, {});
+        
+        console.log('Level counts:', levelCounts);
+        
+        const totalRespondents = data.length;
+        const beginnerRatio = ((levelCounts['E級 (Beginner)'] || 0) / totalRespondents * 100).toFixed(1);
+        const visitorRatio = ((levelCounts['D級(Visiter)'] || 0) / totalRespondents * 100).toFixed(1);
+        const userRatio = ((levelCounts['C級 (User)'] || 0) / totalRespondents * 100).toFixed(1);
+        const operatorRatio = ((levelCounts['B級 (Operator)'] || 0) / totalRespondents * 100).toFixed(1);
+        const partnerRatio = ((levelCounts['A級 (Partner)'] || 0) / totalRespondents * 100).toFixed(1);
+        
+        console.log('Ratios calculated:', { beginnerRatio, visitorRatio, userRatio, operatorRatio, partnerRatio });
+        
+        // 部門別の分析
+        const hrCount = data.filter(d => d.mainGroup === '人事室').length;
+        const devCount = data.filter(d => d.mainGroup === '人材開発室').length;
+        const hrRatio = ((hrCount / totalRespondents) * 100).toFixed(1);
+        const devRatio = ((devCount / totalRespondents) * 100).toFixed(1);
+        
+        // 現状分析
+        let status = `<span class="summary-tag bg-blue-600">現状分析</span> ${groupName}の回答者数は <strong>${totalRespondents}人</strong> で、平均TotalScoreは <strong>${avgTotal}点</strong> です。`;
+        status += `AI活用スタイルは、業務の <strong>効率化 (平均${avgEfficiency}点)</strong> が、業務の <strong>高度化 (平均${avgAdvancement}点)</strong> を上回っており、主に時短や作業代替ツールとしての活用が中心となっています。`;
+        status += `<br><br>レベル分布では、<strong>D級(Visiter)が${visitorRatio}%</strong>と最も多く、次いで<strong>C級(User)が${userRatio}%</strong>となっています。`;
+        status += `B級(Operator)以上の高度な活用者は<strong>${operatorRatio}%</strong>、A級(Partner)の最上位レベルは<strong>${partnerRatio}%</strong>、E級(Beginner)は<strong>${beginnerRatio}%</strong>です。`;
+        status += `<br><br>部門別では、<strong>人事室が${hrRatio}% (${hrCount}人)</strong>、<strong>人材開発室が${devRatio}% (${devCount}人)</strong>となっています。`;
+        
+        // 課題分析
+        let challenges = `<span class="summary-tag bg-red-600">課題分析</span> `;
+        
+        if (parseFloat(beginnerRatio) > 15) {
+            challenges += `E級(Beginner)が${beginnerRatio}%と比較的高く、AI活用の基礎知識が不足している従業員が多く存在します。`;
+        }
+        
+        if (parseFloat(visitorRatio) > 35) {
+            challenges += `D級(Visiter)が${visitorRatio}%と過半数を占めており、AIツールの基本的な使用はできても、業務改善への応用が限定的です。`;
+        }
+        
+        if (parseFloat(operatorRatio) < 20) {
+            challenges += `B級(Operator)以上の高度な活用者が${operatorRatio}%と少なく、AIを活用した業務革新や新たな価値創造ができている従業員が不足しています。`;
+        }
+        
+        if (parseFloat(partnerRatio) < 5) {
+            challenges += `A級(Partner)の最上位レベルが${partnerRatio}%と極めて少なく、AI活用のエキスパートとして他者をリードできる人材が不足しています。`;
+        }
+        
+        if (parseFloat(avgContribution) < 2.5) {
+            challenges += `また、組織貢献や周囲への波及効果を測る「共有・組織貢献」の平均スコア（${avgContribution}点）も低く、個人のスキルが組織力に繋がりきれていません。`;
+        }
+        
+        // 提言
+        let recommendations = `<span class="summary-tag bg-green-600">改善提言</span> `;
+        
+        if (parseFloat(beginnerRatio) > 15) {
+            recommendations += `<strong>E級(Beginner)向けの基礎研修</strong>を優先的に実施し、AIツールの基本的な使い方を習得させることが急務です。`;
+        }
+        
+        if (parseFloat(visitorRatio) > 35) {
+            recommendations += `<strong>D級(Visiter)からC級(User)へのレベルアップ</strong>を図るため、効率化だけでなく高度化に焦点を当てた実践的な研修が必要です。`;
+        }
+        
+        if (parseFloat(operatorRatio) < 20) {
+            recommendations += `<strong>B級(Operator)以上の高度な活用者を育成</strong>するため、AIを活用した業務革新事例の共有や、高度なスキルを持つ従業員のメンター制度の構築を推奨します。`;
+        }
+        
+        if (parseFloat(partnerRatio) < 5) {
+            recommendations += `<strong>A級(Partner)レベルのエキスパート育成</strong>を目指し、AI活用の最前線で活躍できる人材の育成プログラムの構築が必要です。`;
+        }
+        
+        recommendations += `<br><br>具体的には、データ分析や高度なリサーチ、企画書の壁打ちといった、より思考力が求められる業務でのAI活用事例を共有し、実践するワークショップの開催が有効です。`;
+        recommendations += `また、部門間でのスキル格差を埋めるため、人材開発室のノウハウを人事室にも展開するクロスファンクショナルな研修の実施も検討すべきです。`;
+
+        const result = { status, challenges, recommendations };
+        console.log('Summary generated successfully:', result);
+        return result;
+        
+    } catch (error) {
+        console.error('Error in generateSummaryText:', error);
+        return { 
+            status: "データ処理中にエラーが発生しました。", 
+            challenges: "エラーの詳細を確認してください。", 
+            recommendations: "システム管理者に連絡してください。" 
+        };
+    }
+}
+
+function renderSummaries() {
+    console.log('renderSummaries called');
+    console.log('processedData length:', processedData.length);
+    console.log('processedData sample:', processedData[0]);
+    
+    const container = document.getElementById('analysisSummaryContainer');
+    console.log('Container element:', container);
+    
+    if (!container) {
+        console.error('analysisSummaryContainer not found');
+        return;
+    }
+    
+    container.innerHTML = '';
+
+    // 全体の分析結果のみを表示
+    const summary = generateSummaryText(processedData, '全体');
+    console.log('Generated summary:', summary);
+    
+    if (!summary || !summary.status) {
+        console.error('Summary generation failed or returned invalid data');
+        return;
+    }
+    
+    const cardHtml = `
+        <div class="summary-card p-6 rounded-lg shadow-lg">
+            <h3 class="text-2xl font-bold mb-4 text-yellow-400">全体の分析結果</h3>
+            <div class="space-y-4 text-gray-300 leading-relaxed">
+                <p>${summary.status}</p>
+                <p>${summary.challenges}</p>
+                <p>${summary.recommendations}</p>
+            </div>
+        </div>
+    `;
+    
+    console.log('Card HTML:', cardHtml);
+    container.innerHTML = cardHtml;
+    console.log('Summary rendered successfully');
+}
+
+// --- INITIALIZATION ---
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOMContentLoaded event fired');
+    
+    console.log('Raw data length:', rawData.length);
+    console.log('Raw data preview:', rawData.substring(0, 200));
+    
+    const rawParsedData = parseData(rawData);
+    console.log('Raw parsed data:', rawParsedData.length, 'rows');
+    console.log('First row sample:', rawParsedData[0]);
+    
+    processedData = processData(rawParsedData);
+    console.log('Processed data:', processedData.length, 'rows');
+    console.log('Sample processed data:', processedData[0]);
+    
+    if (processedData.length === 0) {
+        console.error('No data was processed successfully!');
+        return;
+    }
+    
+    // Calculate overall averages and max values for fixed chart scales/lines
+    overallAverages.behavior = getAverage(processedData, 'behaviorScore');
+    overallAverages.knowledge = getAverage(processedData, 'knowledgeScore');
+    overallAverages.maxBehavior = Math.max(...processedData.map(d => d.behaviorScore));
+    overallAverages.maxKnowledge = Math.max(...processedData.map(d => d.knowledgeScore));
+    
+    console.log('Overall averages:', overallAverages);
+
+    setupCharts();
+    console.log('Charts setup completed');
+    
+    populateFilters(processedData);
+    console.log('Filters populated');
+    
+    // ダッシュボードの更新を確実に実行
+    setTimeout(() => {
+        updateDashboard();
+        console.log('Dashboard updated (delayed)');
+    }, 100);
+    
+    renderSummaries();
+    console.log('Summaries rendered');
+
+    // AIレベル別詳細表示機能の初期化
+    initializeLevelDetails();
+    console.log('Level details initialized');
+    
+    // デフォルトでE級を表示
+    showLevelDetails('E級 (Beginner)');
+    updateActiveTab(document.querySelector('[data-level="E級 (Beginner)"]'));
+    console.log('Default level details displayed');
+
+    const filters = ['departmentFilter', 'roleFilter', 'ageFilter', 'employeeTypeFilter'];
+    filters.forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.addEventListener('change', () => {
+                console.log('Filter changed:', id, element.value);
+                updateDashboard();
+            });
+        } else {
+            console.error('Filter element not found:', id);
+        }
+    });
+});
+
+// --- AI LEVEL DETAILS FUNCTIONS ---
+function initializeLevelDetails() {
+    // タブのクリックイベントを設定
+    const levelTabs = document.querySelectorAll('.level-tab');
+    levelTabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            const selectedLevel = tab.getAttribute('data-level');
+            showLevelDetails(selectedLevel);
+            updateActiveTab(tab);
+        });
+    });
+}
+
+function updateActiveTab(activeTab) {
+    // すべてのタブからアクティブクラスを削除
+    document.querySelectorAll('.level-tab').forEach(tab => {
+        tab.classList.remove('bg-blue-600', 'text-white');
+        tab.classList.add('bg-gray-700', 'hover:bg-gray-600');
+    });
+    
+    // クリックされたタブをアクティブにする
+    activeTab.classList.remove('bg-gray-700', 'hover:bg-gray-600');
+    activeTab.classList.add('bg-blue-600', 'text-white');
+}
+
+function showLevelDetails(level) {
+    console.log(`showLevelDetails called for level: ${level}`);
+    
+    const levelData = processedData.filter(person => person.aiLevel === level);
+    console.log(`Level data for ${level}:`, levelData);
+    console.log(`Number of people in ${level}:`, levelData.length);
+    
+    if (levelData.length === 0) {
+        console.log(`No data found for level: ${level}`);
+        return;
+    }
+    
+    // サンプルデータの確認
+    const samplePerson = levelData[0];
+    console.log(`Sample person data:`, samplePerson);
+    console.log(`Sample person depthScore:`, samplePerson.depthScore, typeof samplePerson.depthScore);
+    console.log(`Sample person efficiencyScore:`, samplePerson.efficiencyScore, typeof samplePerson.efficiencyScore);
+    console.log(`Sample person advancementScore:`, samplePerson.advancementScore, typeof samplePerson.advancementScore);
+    console.log(`Sample person contributionScore:`, samplePerson.contributionScore, typeof samplePerson.contributionScore);
+    console.log(`Sample person knowledgeScore:`, samplePerson.knowledgeScore, typeof samplePerson.knowledgeScore);
+    
+    const container = document.getElementById('levelDetails');
+    if (!container) {
+        console.error('Level details container not found');
+        return;
+    }
+    
+    // レベル別の統計情報を計算
+    const avgTotal = getAverage(levelData, 'totalScore');
+    const avgEfficiency = getAverage(levelData, 'efficiencyScore');
+    const avgAdvancement = getAverage(levelData, 'advancementScore');
+    const avgContribution = getAverage(levelData, 'contributionScore');
+    const avgDepth = getAverage(levelData, 'depthScore');
+    const avgKnowledge = getAverage(levelData, 'knowledgeScore');
+    
+    // カード表示用の平均値計算（既に合計点なので掛け算不要）
+    const avgDepthTotal = getAverage(levelData, 'depthScore'); // Q1+Q2 = 14点満点
+    const avgEfficiencyTotal = getAverage(levelData, 'efficiencyScore'); // Q3+Q4+Q5+Q6 = 28点満点
+    const avgAdvancementTotal = getAverage(levelData, 'advancementScore'); // Q7+Q8+Q9 = 21点満点
+    const avgContributionTotal = getAverage(levelData, 'contributionScore'); // Q10 = 7点満点
+    const avgKnowledgeTotal = getAverage(levelData, 'knowledgeScore'); // Q11+Q12+Q13+Q14+Q15 = 30点満点
+    
+    // デバッグログ
+    console.log(`Level ${level} averages:`);
+    console.log(`  総合スコア: ${avgTotal} (100点満点)`);
+    console.log(`  活用の深さ: ${avgDepthTotal} (14点満点)`);
+    console.log(`  効率化: ${avgEfficiencyTotal} (28点満点)`);
+    console.log(`  高度化: ${avgAdvancementTotal} (21点満点)`);
+    console.log(`  共有・組織貢献: ${avgContributionTotal} (7点満点)`);
+    console.log(`  知識: ${avgKnowledgeTotal} (30点満点)`);
+    
+    // 安全な数値変換
+    const safeAvgTotal = typeof avgTotal === 'number' && !isNaN(avgTotal) ? avgTotal.toFixed(1) : '0.0';
+    const safeAvgDepthTotal = typeof avgDepthTotal === 'number' && !isNaN(avgDepthTotal) ? avgDepthTotal.toFixed(1) : '0.0';
+    const safeAvgEfficiencyTotal = typeof avgEfficiencyTotal === 'number' && !isNaN(avgEfficiencyTotal) ? avgEfficiencyTotal.toFixed(1) : '0.0';
+    const safeAvgAdvancementTotal = typeof avgAdvancementTotal === 'number' && !isNaN(avgAdvancementTotal) ? avgAdvancementTotal.toFixed(1) : '0.0';
+    const safeAvgContributionTotal = typeof avgContributionTotal === 'number' && !isNaN(avgContributionTotal) ? avgContributionTotal.toFixed(1) : '0.0';
+    const safeAvgKnowledgeTotal = typeof avgKnowledgeTotal === 'number' && !isNaN(avgKnowledgeTotal) ? avgKnowledgeTotal.toFixed(1) : '0.0';
+    
+    // 詳細テーブルを生成
+    const tableHtml = `
+        <div class="overflow-x-auto">
+            <table class="min-w-full bg-white border border-gray-300">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-4 py-2 border border-gray-300 text-left text-sm font-medium text-gray-700">名前</th>
+                        <th class="px-4 py-2 border border-gray-300 text-left text-sm font-medium text-gray-700">所属</th>
+                        <th class="px-4 py-2 border border-gray-300 text-left text-sm font-medium text-gray-700">年齢</th>
+                        <th class="px-4 py-2 border border-gray-300 text-left text-sm font-medium text-gray-700">総合スコア</th>
+                        <th class="px-4 py-2 border border-gray-300 text-left text-sm font-medium text-gray-700">活用の深さ</th>
+                        <th class="px-4 py-2 border border-gray-300 text-left text-sm font-medium text-gray-700">効率化</th>
+                        <th class="px-4 py-2 border border-gray-300 text-left text-sm font-medium text-gray-700">高度化</th>
+                        <th class="px-4 py-2 border border-gray-300 text-left text-sm font-medium text-gray-700">共有・組織貢献</th>
+                        <th class="px-4 py-2 border border-gray-300 text-left text-sm font-medium text-gray-700">知識</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${levelData.map(person => `
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-4 py-2 border border-gray-300 text-sm text-gray-900">${person.name}</td>
+                            <td class="px-4 py-2 border border-gray-300 text-sm text-gray-700">${person.department}</td>
+                            <td class="px-4 py-2 border border-gray-300 text-sm text-gray-700">${person.age}</td>
+                            <td class="px-4 py-2 border border-gray-300 text-sm text-gray-700">${person.totalScore}</td>
+                            <td class="px-4 py-2 border border-gray-300 text-sm text-gray-700">${person.depthScore}</td>
+                            <td class="px-4 py-2 border border-gray-300 text-sm text-gray-700">${person.efficiencyScore}</td>
+                            <td class="px-4 py-2 border border-gray-300 text-sm text-gray-700">${person.advancementScore}</td>
+                            <td class="px-4 py-2 border border-gray-300 text-sm text-gray-700">${person.contributionScore}</td>
+                            <td class="px-4 py-2 border border-gray-300 text-sm text-gray-700">${person.knowledgeScore}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        </div>
+    `;
+    
+    container.innerHTML = `
+        <div class="mb-6">
+            <h3 class="text-xl font-bold text-white mb-4">${level} - 詳細分析</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 mb-6">
+                <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                    <h4 class="text-lg font-semibold text-gray-800 mb-2">総合スコア</h4>
+                    <p class="text-3xl font-bold text-gray-600">${safeAvgTotal}</p>
+                    <p class="text-sm text-gray-600 mt-1">100点満点中</p>
+                </div>
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <h4 class="text-lg font-semibold text-blue-800 mb-2">活用の深さ</h4>
+                    <p class="text-3xl font-bold text-blue-600">${safeAvgDepthTotal}</p>
+                    <p class="text-sm text-blue-600 mt-1">14点満点中</p>
+                </div>
+                <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <h4 class="text-lg font-semibold text-green-800 mb-2">効率化</h4>
+                    <p class="text-3xl font-bold text-green-600">${safeAvgEfficiencyTotal}</p>
+                    <p class="text-sm text-green-600 mt-1">28点満点中</p>
+                </div>
+                <div class="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                    <h4 class="text-lg font-semibold text-purple-800 mb-2">高度化</h4>
+                    <p class="text-3xl font-bold text-purple-600">${safeAvgAdvancementTotal}</p>
+                    <p class="text-sm text-purple-600 mt-1">21点満点中</p>
+                </div>
+                <div class="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                    <h4 class="text-lg font-semibold text-orange-800 mb-2">共有・組織貢献</h4>
+                    <p class="text-3xl font-bold text-orange-600">${safeAvgContributionTotal}</p>
+                    <p class="text-sm text-orange-600 mt-1">7点満点中</p>
+                </div>
+                <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                    <h4 class="text-lg font-semibold text-red-800 mb-2">知識</h4>
+                    <p class="text-3xl font-bold text-red-600">${safeAvgKnowledgeTotal}</p>
+                    <p class="text-sm text-red-600 mt-1">30点満点中</p>
+                </div>
+            </div>
+        </div>
+        
+        ${tableHtml}
+    `;
+}
+
+// --- DEBUG FUNCTIONS ---
+function debugPersonScore(personName) {
+    const person = processedData.find(p => p.name === personName);
+    if (!person) {
+        console.log(`Person not found: ${personName}`);
+        return;
+    }
+    
+    console.log(`=== Debug: ${personName} ===`);
+    console.log('Processed data:', person);
+    
+    // 元のrawDataから該当者を検索
+    const rawLines = rawData.trim().split('\n');
+    const headers = rawLines[0].split(',').map(h => h.trim());
+    const personRawData = rawLines.find(line => line.includes(personName));
+    
+    if (personRawData) {
+        const values = personRawData.split(',').map(v => v.trim());
+        const rawPerson = {};
+        headers.forEach((header, i) => { rawPerson[header] = values[i]; });
+        
+        console.log('Raw data:', rawPerson);
+        
+        // スコアの詳細計算
+        const q1 = parseInt(rawPerson['Q1_Score']) || 0;
+        const q2 = parseInt(rawPerson['Q2_Score']) || 0;
+        const q3 = parseInt(rawPerson['Q3_Score']) || 0;
+        const q4 = parseInt(rawPerson['Q4_Score']) || 0;
+        const q5 = parseInt(rawPerson['Q5_Score']) || 0;
+        const q6 = parseInt(rawPerson['Q6_Score']) || 0;
+        const q7 = parseInt(rawPerson['Q7_Score']) || 0;
+        const q8 = parseInt(rawPerson['Q8_Score']) || 0;
+        const q9 = parseInt(rawPerson['Q9_Score']) || 0;
+        const q10 = parseInt(rawPerson['Q10_Score']) || 0;
+        const q11 = parseInt(rawPerson['Q11_Score']) || 0;
+        const q12 = parseInt(rawPerson['Q12_Score']) || 0;
+        const q13 = parseInt(rawPerson['Q13_Score']) || 0;
+        const q14 = parseInt(rawPerson['Q14_Score']) || 0;
+        const q15 = parseInt(rawPerson['Q15_Score']) || 0;
+        
+        const calculatedBehavior = q1 + q2 + q3 + q4 + q5 + q6 + q7 + q8 + q9 + q10;
+        const calculatedKnowledge = q11 + q12 + q13 + q14 + q15;
+        const calculatedTotal = calculatedBehavior + calculatedKnowledge;
+        const csvTotal = parseInt(rawPerson['TotalScore']) || 0;
+        
+        console.log('Score breakdown:');
+        console.log(`  Q1-Q10 (Behavior): ${q1}+${q2}+${q3}+${q4}+${q5}+${q6}+${q7}+${q8}+${q9}+${q10} = ${calculatedBehavior}`);
+        console.log(`  Q11-Q15 (Knowledge): ${q11}+${q12}+${q13}+${q14}+${q15} = ${calculatedKnowledge}`);
+        console.log(`  Calculated Total: ${calculatedTotal}`);
+        console.log(`  CSV TotalScore: ${csvTotal}`);
+        console.log(`  Difference: ${calculatedTotal - csvTotal}`);
+        
+        // カテゴリ別スコアの詳細
+        console.log('Category breakdown:');
+        const depthTotal = q1 + q2;
+        const efficiencyTotal = q3 + q4 + q5 + q6;
+        const advancementTotal = q7 + q8 + q9;
+        const contributionTotal = q10;
+        const knowledgeTotal = q11 + q12 + q13 + q14 + q15;
+        
+        console.log(`  活用の深さ (Q1+Q2): ${q1}+${q2} = ${depthTotal}点 ${depthTotal > 14 ? '⚠️ 14点超過!' : ''}`);
+        console.log(`  効率化 (Q3+Q4+Q5+Q6): ${q3}+${q4}+${q5}+${q6} = ${efficiencyTotal}点 ${efficiencyTotal > 28 ? '⚠️ 28点超過!' : ''}`);
+        console.log(`  高度化 (Q7+Q8+Q9): ${q7}+${q8}+${q9} = ${advancementTotal}点 ${advancementTotal > 21 ? '⚠️ 21点超過!' : ''}`);
+        console.log(`  共有・組織貢献 (Q10): ${q10}点 ${q10 > 7 ? '⚠️ 7点超過!' : ''}`);
+        console.log(`  知識 (Q11+Q12+Q13+Q14+Q15): ${q11}+${q12}+${q13}+${q14}+${q15} = ${knowledgeTotal}点 ${knowledgeTotal > 30 ? '⚠️ 30点超過!' : ''}`);
+        
+        // スコア調整の詳細
+        if (Math.abs(calculatedTotal - csvTotal) > 1) {
+            const ratio = csvTotal / calculatedTotal;
+            const adjustedBehavior = Math.round(calculatedBehavior * ratio);
+            const adjustedKnowledge = csvTotal - adjustedBehavior;
+            
+            console.log('Score adjustment details:');
+            console.log(`  Ratio: ${ratio}`);
+            console.log(`  Adjusted Behavior: ${adjustedBehavior}`);
+            console.log(`  Adjusted Knowledge: ${adjustedKnowledge}`);
+            console.log(`  Final Sum: ${adjustedBehavior + adjustedKnowledge}`);
+        }
+    }
+}
+
+// グローバル関数として公開（コンソールから呼び出し可能）
+window.debugPersonScore = debugPersonScore;
+</script>
+</body>
+</html>
