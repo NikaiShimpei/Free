@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>人の成長戦略会議 #2 課題マップ (新データ版)</title>
+    <!-- タイトルも編集可能にするためIDを付与 -->
+    <title id="page-title">人の成長戦略会議 #2 課題マップ (新データ版)</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -142,6 +143,44 @@
         .shadow-glow {
             box-shadow: 0 0 15px rgba(168, 85, 247, 0.7); /* purple-500 */
         }
+        
+        /* 編集モード用のスタイル */
+        [contenteditable="true"] {
+            outline: 2px dashed rgba(255, 255, 255, 0.5);
+            outline-offset: 4px;
+            background-color: rgba(255, 255, 255, 0.1);
+            cursor: text;
+        }
+        
+        /* 編集ボタンのスタイル */
+        #edit-controls {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            gap: 12px;
+        }
+        #edit-controls button {
+            background-color: rgba(255, 255, 255, 0.9);
+            color: #000;
+            font-family: 'Mplus 1p', sans-serif;
+            font-weight: 700;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            transition: all 0.2s ease-in-out;
+        }
+        #edit-controls button:hover {
+            background-color: #fff;
+            transform: translateY(-2px);
+        }
+        #edit-controls #save-button,
+        #edit-controls #cancel-button {
+            display: none; /* 初期状態では非表示 */
+        }
     </style>
 </head>
 <body class="antialiased text-gray-200 relative overflow-x-hidden">
@@ -149,10 +188,11 @@
     <!-- 1. タイトルセクション -->
     <section class="relative py-16 md:py-24 z-10">
         <div class="container mx-auto px-4 text-center">
-            <h1 class="text-5xl md:text-7xl font-bold mb-4 text-white drop-shadow-lg animate-fade-in-down">
+            <!-- 編集可能要素にIDと data-editable を追加 -->
+            <h1 id="main-title" data-editable="true" class="text-5xl md:text-7xl font-bold mb-4 text-white drop-shadow-lg animate-fade-in-down">
                 人の成長戦略会議 #2
             </h1>
-            <p class="text-2xl md:text-3xl opacity-80 text-gray-300 drop-shadow animate-fade-in-up">
+            <p id="sub-title" data-editable="true" class="text-2xl md:text-3xl opacity-80 text-gray-300 drop-shadow animate-fade-in-up">
                 全社横断 課題クラスターマップ (2025年度)
             </p>
         </div>
@@ -162,18 +202,19 @@
 
     <!-- 2. 4象限バブルチャートセクション -->
     <section class="container mx-auto px-4 py-16 relative z-10">
-        <h2 class="text-4xl font-bold text-center mb-16 text-white drop-shadow-md animate-fade-in">
+        <h2 id="quadrant-title" data-editable="true" class="text-4xl font-bold text-center mb-4 text-white drop-shadow-md animate-fade-in">
             4象限 課題クラスターマップ
         </h2>
+        <!-- 軸ラベルを H2 の直下に移動し、センタリングを合わせる -->
+        <div id="axis-y-top" data-editable="true" class="text-2xl font-bold text-gray-300 whitespace-nowrap animate-fade-in-up text-center mb-12" style="animation-delay: 0.2s;">マネジメント層の課題</div>
 
         <!-- PC用コンテナ -->
         <div class="hidden md:block max-w-7xl mx-auto relative p-8 bg-black bg-opacity-30 backdrop-blur-sm rounded-3xl shadow-2xl border border-gray-700/50 animate-fade-in-delay">
             
-            <!-- 軸ラベル -->
-            <div class="absolute top-0 left-1/2 -translate-x-1/2 -mt-12 text-2xl font-bold text-gray-400 whitespace-nowrap animate-slide-in-top">マネジメント層の課題</div>
-            <div class="absolute bottom-0 left-1/2 -translate-x-1/2 -mb-12 text-2xl font-bold text-gray-400 whitespace-nowrap animate-slide-in-bottom">現場層の課題</div>
-            <div class="absolute top-1/2 left-0 -translate-y-1/2 -ml-16 text-2xl font-bold text-gray-400 writing-mode-vertical-rl rotate-180 whitespace-nowrap animate-slide-in-left">メンタル・士気</div>
-            <div class="absolute top-1/2 right-0 -translate-y-1/2 -mr-16 text-2xl font-bold text-gray-400 writing-mode-vertical-rl whitespace-nowrap animate-slide-in-right">スキル・成長</div>
+            <!-- 軸ラベル (axis-y-top はH2の下に移動) -->
+            <div id="axis-y-bottom" data-editable="true" class="absolute bottom-0 left-1/2 -translate-x-1/2 -mb-12 text-2xl font-bold text-gray-400 whitespace-nowrap animate-slide-in-bottom">現場層の課題</div>
+            <div id="axis-x-left" data-editable="true" class="absolute top-1/2 left-0 -translate-y-1/2 -ml-16 text-2xl font-bold text-gray-400 writing-mode-vertical-rl rotate-180 whitespace-nowrap animate-slide-in-left">メンタル・士気</div>
+            <div id="axis-x-right" data-editable="true" class="absolute top-1/2 right-0 -translate-y-1/2 -mr-16 text-2xl font-bold text-gray-400 writing-mode-vertical-rl whitespace-nowrap animate-slide-in-right">スキル・成長</div>
             
             <!-- 軸線 (光る) -->
             <div class="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-0.5 bg-gradient-to-b from-transparent via-purple-500 to-transparent shadow-glow z-0"></div>
@@ -208,22 +249,22 @@
         <div class="md:hidden space-y-8 animate-fade-in-delay">
             <!-- 象限③ -->
             <div class="p-4 bg-black bg-opacity-30 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-700/50">
-                <h3 class="font-bold text-xl text-center mb-4 p-2 bg-gradient-to-r from-blue-700 to-blue-900 text-white rounded-lg shadow-md animate-pulse-light">③ マネ×メンタル</h3>
+                <h3 id="mobile-q3-title" data-editable="true" class="font-bold text-xl text-center mb-4 p-2 bg-gradient-to-r from-blue-700 to-blue-900 text-white rounded-lg shadow-md animate-pulse-light">③ マネ×メンタル</h3>
                 <div id="quadrant-3-mobile" class="bg-gradient-to-br from-[#1A203F] to-[#0A102F] p-4 min-h-[250px] flex flex-wrap gap-4 items-center justify-center content-center rounded-lg border border-gray-700/30"></div>
             </div>
             <!-- 象限① -->
             <div class="p-4 bg-black bg-opacity-30 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-700/50">
-                <h3 class="font-bold text-xl text-center mb-4 p-2 bg-gradient-to-r from-green-700 to-green-900 text-white rounded-lg shadow-md animate-pulse-light">① マネ×スキル</h3>
+                <h3 id="mobile-q1-title" data-editable="true" class="font-bold text-xl text-center mb-4 p-2 bg-gradient-to-r from-green-700 to-green-900 text-white rounded-lg shadow-md animate-pulse-light">① マネ×スキル</h3>
                 <div id="quadrant-1-mobile" class="bg-gradient-to-bl from-[#1A3F20] to-[#0A2F10] p-4 min-h-[250px] flex flex-wrap gap-4 items-center justify-center content-center rounded-lg border border-gray-700/30"></div>
             </div>
             <!-- 象限④ -->
             <div class="p-4 bg-black bg-opacity-30 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-700/50">
-                <h3 class="font-bold text-xl text-center mb-4 p-2 bg-gradient-to-r from-red-700 to-red-900 text-white rounded-lg shadow-md animate-pulse-light">④ 現場×メンタル</h3>
+                <h3 id="mobile-q4-title" data-editable="true" class="font-bold text-xl text-center mb-4 p-2 bg-gradient-to-r from-red-700 to-red-900 text-white rounded-lg shadow-md animate-pulse-light">④ 現場×メンタル</h3>
                 <div id="quadrant-4-mobile" class="bg-gradient-to-tr from-[#3F1A20] to-[#2F0A10] p-4 min-h-[250px] flex flex-wrap gap-4 items-center justify-center content-center rounded-lg border border-gray-700/30"></div>
             </div>
             <!-- 象限② -->
             <div class="p-4 bg-black bg-opacity-30 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-700/50">
-                <h3 class="font-bold text-xl text-center mb-4 p-2 bg-gradient-to-r from-yellow-700 to-yellow-900 text-white rounded-lg shadow-md animate-pulse-light">② 現場×スキル</h3>
+                <h3 id="mobile-q2-title" data-editable="true" class="font-bold text-xl text-center mb-4 p-2 bg-gradient-to-r from-yellow-700 to-yellow-900 text-white rounded-lg shadow-md animate-pulse-light">② 現場×スキル</h3>
                 <div id="quadrant-2-mobile" class="bg-gradient-to-tl from-[#3F3A1A] to-[#2F2A0A] p-4 min-h-[250px] flex flex-wrap gap-4 items-center justify-center content-center rounded-lg border border-gray-700/30"></div>
             </div>
         </div>
@@ -232,24 +273,24 @@
     <!-- 3. 総括セクション -->
     <section class="relative py-16 z-10">
         <div class="container mx-auto px-4 max-w-4xl p-8 bg-black bg-opacity-30 backdrop-blur-sm rounded-3xl shadow-2xl border border-gray-700/50 animate-fade-in-delay">
-            <h2 class="text-4xl font-bold text-center mb-10 text-white drop-shadow-md animate-fade-in">
+            <h2 id="summary-title" data-editable="true" class="text-4xl font-bold text-center mb-10 text-white drop-shadow-md animate-fade-in">
                 総括と傾向 (2025年度)
             </h2>
             <div class="space-y-8">
                 
                 <!-- 総括テキスト 1 -->
                 <div class="p-6 border-l-4 border-blue-500 bg-gradient-to-r from-blue-900/40 to-transparent rounded-r-lg shadow-lg hover:shadow-xl transition-shadow duration-300 animate-slide-in-left">
-                    <h3 class="font-bold text-2xl text-blue-300 mb-3">
+                    <h3 id="summary-1-title" data-editable="true" class="font-bold text-2xl text-blue-300 mb-3">
                         全体の傾向
                     </h3>
-                    <ul class="list-disc pl-5 space-y-3 text-gray-300 text-lg">
-                        <li>
+                    <ul id="summary-1-list" class="list-disc pl-5 space-y-3 text-gray-300 text-lg">
+                        <li id="summary-1-item-1" data-editable="true">
                             多くの局で「キャリアビジョンの欠如」（象限②）が共通課題として挙げられている。特に6局、11局、15局で顕著であり、現場層の成長実感やモチベーションに影響している。
                         </li>
-                        <li>
+                        <li id="summary-1-item-2" data-editable="true">
                             「繁忙」と「メンタル不調者の個別ケア」（象限④）の必要性は、3局、9局、10局、14局など複数の局で指摘されており、高負荷な業務環境が継続していることが伺える。
                         </li>
-                        <li>
+                        <li id="summary-1-item-3" data-editable="true">
                             12局や3局では「管理職の負担・孤立」（象限③）が深刻な課題として認識されており、マネジメント層の疲弊が現場のケア不足に直結している構造が懸念される。
                         </li>
                     </ul>
@@ -257,17 +298,17 @@
 
                 <!-- 総括テキスト 2 -->
                 <div class="p-6 border-l-4 border-green-500 bg-gradient-to-r from-green-900/40 to-transparent rounded-r-lg shadow-lg hover:shadow-xl transition-shadow duration-300 animate-slide-in-right">
-                    <h3 class="font-bold text-2xl text-green-300 mb-3">
+                    <h3 id="summary-2-title" data-editable="true" class="font-bold text-2xl text-green-300 mb-3">
                         課題の相関
                     </h3>
-                    <ul class="list-disc pl-5 space-y-3 text-gray-300 text-lg">
-                        <li>
+                    <ul id="summary-2-list" class="list-disc pl-5 space-y-3 text-gray-300 text-lg">
+                        <li id="summary-2-item-1" data-editable="true">
                             「リーダー・次世代育成」（象限①）の遅れが、現場層の「キャリアビジョンの欠如」（象限②）や「ロールモデルの不在」に直結している。
                         </li>
-                        <li>
+                        <li id="summary-2-item-2" data-editable="true">
                             「管理職の負担増大・孤立」（象限③）は、現場の「繁忙」や「メンタル不調」（象限④）への対応を困難にしており、負のスパイラルを生む危険性がある。
                         </li>
-                        <li>
+                        <li id="summary-2-item-3" data-editable="true">
                             2局や6局で挙がった「女性のキャリア不安」（象限④）は、象限②の「キャリアイメージの欠如」とも関連が深く、ジェンダーの観点を含めた育成パスの整備が求められる。
                         </li>
                     </ul>
@@ -276,9 +317,18 @@
         </div>
     </section>
 
-    <footer class="text-center py-8 text-gray-500 text-base z-10 relative">
+    <!-- 4. フッターセクション -->
+    <footer id="footer-text" data-editable="true" class="text-center py-8 text-gray-500 text-base z-10 relative">
         &copy; 2025 人材開発室
     </footer>
+
+    <!-- 編集コントロールボタン -->
+    <div id="edit-controls">
+        <button id="edit-button" title="ページを編集する">編集</button>
+        <button id="save-button" title="変更を保存する">保存</button>
+        <button id="cancel-button" title="編集をキャンセル">キャンセル</button>
+        <button id="reset-button" title="保存した内容をリセット">リセット</button>
+    </div>
 
 
     <!-- C. JavaScriptによる動的生成 -->
@@ -444,6 +494,11 @@
 
             // ツールチップ内の「生の声」リストを生成
             let voicesHTML = cluster.voices.map(voice => {
+                const { text, speaker } = parseVoice(voice);
+                let speakerHTML = speaker 
+                    ? `<span class="block text-gray-400 text-xs italic mt-1">${speaker}</span>` 
+                    : '';
+                return `<li class="break-words">${text}${speakerHTML}</li>`;
             }).join('');
 
             return `
@@ -470,7 +525,7 @@
             `;
         }
 
-        // 3. 描画ロジック
+        // 3. 描画ロジック (バブル生成)
         document.addEventListener('DOMContentLoaded', () => {
             const containers = {
                 'quadrant-1': document.getElementById('quadrant-1'),
@@ -500,6 +555,140 @@
             if(containers['quadrant-3-mobile']) containers['quadrant-3-mobile'].innerHTML = html_q3;
             if(containers['quadrant-4-mobile']) containers['quadrant-4-mobile'].innerHTML = html_q4;
         });
+
+        // 4. 編集機能とLocalStorageのロジック
+        document.addEventListener('DOMContentLoaded', () => {
+            const editButton = document.getElementById('edit-button');
+            const saveButton = document.getElementById('save-button');
+            const cancelButton = document.getElementById('cancel-button');
+            const resetButton = document.getElementById('reset-button');
+            const editableElements = document.querySelectorAll('[data-editable="true"]');
+            
+            // ページのユニークなキー（ファイル名に基づく）
+            const storageKey = 'editableContent_kadai_map_new_data';
+            let originalContent = {}; // キャンセル用に元の内容を保持
+
+            // 1. 読み込み: localStorageからデータをロードする
+            function loadContent() {
+                try {
+                    const savedContent = localStorage.getItem(storageKey);
+                    if (savedContent) {
+                        const content = JSON.parse(savedContent);
+                        Object.keys(content).forEach(id => {
+                            const element = document.getElementById(id);
+                            if (element) {
+                                if (id === 'page-title') {
+                                    document.title = content[id];
+                                } else {
+                                    element.innerHTML = content[id];
+                                }
+                            }
+                        });
+                    }
+                } catch (e) {
+                    console.error("保存されたコンテンツの読み込みに失敗しました。", e);
+                    localStorage.removeItem(storageKey); // 壊れたデータを削除
+                }
+            }
+
+            // 2. 編集モード開始
+            function startEditing() {
+                // キャンセル用に現在の内容を保存
+                originalContent = {};
+                editableElements.forEach(el => {
+                    originalContent[el.id] = el.innerHTML;
+                    el.setAttribute('contenteditable', 'true');
+                });
+                
+                // ページタイトルも編集対象に含める（ただし表示は変えない）
+                originalContent['page-title'] = document.title;
+                
+                editButton.style.display = 'none';
+                resetButton.style.display = 'none';
+                saveButton.style.display = 'inline-block';
+                cancelButton.style.display = 'inline-block';
+            }
+
+            // 3. 保存
+            function saveContent() {
+                let contentToSave = {};
+                editableElements.forEach(el => {
+                    contentToSave[el.id] = el.innerHTML;
+                    el.setAttribute('contenteditable', 'false');
+                });
+                
+                // ページタイトルを個別に保存
+                const newTitle = prompt("新しいページタイトルを入力してください:", document.title);
+                if (newTitle !== null && newTitle.trim() !== "") {
+                    document.title = newTitle;
+                    contentToSave['page-title'] = newTitle;
+                } else if (newTitle === null) {
+                    // キャンセルされた場合は元のタイトルを保存
+                    contentToSave['page-title'] = document.title;
+                } else {
+                    // 空文字の場合は元のタイトルを保存
+                    contentToSave['page-title'] = document.title;
+                }
+
+
+                try {
+                    localStorage.setItem(storageKey, JSON.stringify(contentToSave));
+                    alert("保存しました。");
+                } catch (e) {
+                    console.error("コンテンツの保存に失敗しました。", e);
+                    alert("エラーが発生し、保存できませんでした。");
+                }
+                
+                endEditing();
+            }
+
+            // 4. キャンセル
+            function cancelEditing() {
+                editableElements.forEach(el => {
+                    if (originalContent[el.id]) {
+                        el.innerHTML = originalContent[el.id];
+                    }
+                    el.setAttribute('contenteditable', 'false');
+                });
+                
+                // ページタイトルを元に戻す
+                if (originalContent['page-title']) {
+                    document.title = originalContent['page-title'];
+                }
+                
+                endEditing();
+            }
+
+            // 5. 編集モード終了（共通処理）
+            function endEditing() {
+                editableElements.forEach(el => {
+                    el.setAttribute('contenteditable', 'false');
+                });
+                
+                editButton.style.display = 'inline-block';
+                resetButton.style.display = 'inline-block';
+                saveButton.style.display = 'none';
+                cancelButton.style.display = 'none';
+            }
+            
+            // 6. リセット
+            function resetContent() {
+                if (confirm("保存した内容をすべてリセットし、ページをリロードしますか？\n（元のHTMLの初期状態に戻ります）")) {
+                    localStorage.removeItem(storageKey);
+                    location.reload();
+                }
+            }
+
+            // イベントリスナーの設定
+            editButton.addEventListener('click', startEditing);
+            saveButton.addEventListener('click', saveContent);
+            cancelButton.addEventListener('click', cancelEditing);
+            resetButton.addEventListener('click', resetContent);
+
+            // ページ読み込み時に保存された内容をロード
+            loadContent();
+        });
+
     </script>
 
 </body>
