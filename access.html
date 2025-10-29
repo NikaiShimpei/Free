@@ -23,9 +23,10 @@
                 部門別 平均利用回数
             </h1>
             <p class="text-center text-gray-600 mb-8">
-                提供されたデータに基づき、主要部門ごとの平均利用回数を算出しました。
+                提供されたデータに基づき、詳細な部門ごとの平均利用回数を算出しました。
             </p>
-            <div class="w-full h-96 md:h-[500px]">
+            <!-- グラフのコンテナ高さを増やし、多数のラベルに対応 -->
+            <div class="w-full h-[600px]">
                 <canvas id="usageChart"></canvas>
             </div>
         </div>
@@ -502,39 +503,58 @@
 
                 if (isNaN(value)) continue;
 
-                let dept = null;
+                let deptKey = null; // 厳密な部門名
                 const nameParts = nameCol.split(' ');
                 let personNameParts = [];
-                
-                // 部門名を特定し、それより前の部分を氏名として抽出
-                for (const part of nameParts) {
-                    if (departments.includes(part)) {
-                        dept = part;
+                let foundDeptStartIndex = -1;
+
+                // 会社名の開始インデックスを探す
+                for (let j = 0; j < nameParts.length; j++) {
+                    if (departments.includes(nameParts[j])) {
+                        foundDeptStartIndex = j;
                         break;
                     }
-                    personNameParts.push(part);
                 }
-                
-                // 上記ロジックで部門名が見つからなかった場合のフォールバック
-                if (!dept) {
-                    for (const d of departments) {
-                        if (nameCol.includes(d)) {
-                            dept = d;
-                            break;
+
+                if (foundDeptStartIndex !== -1) {
+                    // 会社名より前を氏名とする
+                    personNameParts = nameParts.slice(0, foundDeptStartIndex);
+                    
+                    // --- 局レベルでの集計ロジックに変更 ---
+                    const companyName = nameParts[foundDeptStartIndex];
+                    deptKey = companyName; // デフォルトは会社名のみ (例: "ＯＮＥ")
+
+                    // 会社名の次に要素がある場合、それを「局」レベルとして追加
+                    if (nameParts.length > foundDeptStartIndex + 1) {
+                        const level1Dept = nameParts[foundDeptStartIndex + 1];
+                        // 次の要素が別の会社名でないことを確認（通常は不要だが念のため）
+                        if (!departments.includes(level1Dept)) {
+                            deptKey = `${companyName} ${level1Dept}`; // 例: "博報堂 出経企", "博報堂 人事室"
                         }
                     }
+                    // これにより「博報堂 出経企 出経企Ｇ」も「博報堂 出経企」として集計される
+                    // --- 変更ここまで ---
+
+                } else {
+                    // どの主要部門にも属さないデータはスキップ
+                    continue; 
+                }
+                
+                // 氏名が空の場合（例: '博報堂 出経企' のみの行）
+                if (personNameParts.length === 0 && deptKey) {
+                    personNameParts.push(deptKey); // 暫定的に部門キーを氏名とする
                 }
 
-                if (dept) {
-                    if (!stats[dept]) {
-                        stats[dept] = { total: 0, count: 0, members: [] }; // members配列を追加
+                if (deptKey) {
+                    if (!stats[deptKey]) {
+                        stats[deptKey] = { total: 0, count: 0, members: [] }; // members配列を追加
                     }
-                    stats[dept].total += value;
-                    stats[dept].count += 1;
+                    stats[deptKey].total += value;
+                    stats[deptKey].count += 1;
 
                     // 氏名を抽出
-                    const displayName = personNameParts.length > 0 ? personNameParts.join(' ') : nameCol; // フォールバック
-                    stats[dept].members.push({ name: displayName, value: value });
+                    const displayName = personNameParts.join(' ');
+                    stats[deptKey].members.push({ name: displayName, value: value });
                 }
             }
             return stats;
@@ -620,6 +640,11 @@
                                 },
                                 padding: { top: 10, bottom: 10 }
                             },
+                            ticks: {
+                                autoSkip: false, // ラベルを自動でスキップしない
+                                maxRotation: 90, // 最大90度傾ける
+                                minRotation: 70  // 最小70度傾ける
+                            },
                             grid: {
                                 display: false, // X軸のグリッド線を非表示
                             }
@@ -648,22 +673,24 @@
                                     const count = dataset.peopleCount[index];
                                     const members = dataset.membersList[index];
 
-                                    const MAX_MEMBERS_TO_SHOW = 10; // ツールチップに表示する最大人数
+                                    // const MAX_MEMBERS_TO_SHOW = 10; // 制限を削除
 
                                     let lines = [];
                                     lines.push(`平均利用回数: ${avg.toFixed(2)} 回`);
                                     lines.push(`対象人数: ${count}人`);
-                                    lines.push(`--- 詳細 (上位${Math.min(members.length, MAX_MEMBERS_TO_SHOW)}名) ---`);
+                                    lines.push(`--- 詳細 (全${members.length}名) ---`); // 全員表示に変更
 
-                                    // 上位メンバーを表示
-                                    for (let i = 0; i < members.length && i < MAX_MEMBERS_TO_SHOW; i++) {
+                                    // 上位メンバーを表示 (全員表示)
+                                    for (let i = 0; i < members.length; i++) { // 制限を削除
                                         lines.push(` ${i + 1}. ${members[i].name}: ${members[i].value} 回`);
                                     }
 
-                                    // 上限を超えた場合は省略表示
+                                    // 上限を超えた場合は省略表示 (削除)
+                                    /*
                                     if (members.length > MAX_MEMBERS_TO_SHOW) {
                                         lines.push(` ...他 ${members.length - MAX_MEMBERS_TO_SHOW} 名`);
                                     }
+                                    */
 
                                     return lines;
                                 }
@@ -680,4 +707,6 @@
     </script>
 </body>
 </html>
+
+
 
