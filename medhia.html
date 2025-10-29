@@ -4,114 +4,158 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>人の成長戦略会議 #2 課題マップ</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts Mplus 1p -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <!-- Tailwind CSS CDN --><script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts Mplus 1p --><link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Mplus+1p:wght@400;700&display=swap" rel="stylesheet">
     <style>
         /* Mplus 1p フォントを適用 */
         body {
             font-family: 'Mplus 1p', sans-serif;
+            background-color: #000; /* 全体のデフォルト背景を黒に */
+            color: #e0e0e0; /* 基本の文字色を明るめに */
+        }
+
+        /* 添付画像のようなグラデーションをbodyに適用 */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1; /* コンテンツの下に配置 */
+            opacity: 0.9; /* 少し透明度を持たせて深みを出す */
+            /* 複数のグラデーションを重ね合わせ、添付画像の色合いと動きを再現 */
+            background: 
+                radial-gradient(at 0% 0%, #3a0050 0%, transparent 70%),
+                radial-gradient(at 100% 0%, #0a012e 0%, transparent 70%),
+                radial-gradient(at 0% 100%, #8b0000 0%, transparent 70%),
+                radial-gradient(at 100% 100%, #0d015c 0%, transparent 70%),
+                radial-gradient(at 50% 50%, #4a0050 0%, transparent 70%);
+            background-blend-mode: screen; /* グラデーションの混合モード */
+            filter: blur(80px); /* ぼかし効果でなめらかに */
+            animation: backgroundShift 30s ease-in-out infinite alternate; /* ゆっくりと背景が動くアニメーション */
+        }
+
+        @keyframes backgroundShift {
+            0% {
+                transform: scale(1);
+                background-position: 0% 0%, 100% 0%, 0% 100%, 100% 100%, 50% 50%;
+            }
+            100% {
+                transform: scale(1.1); /* 少し拡大・縮小して動きを出す */
+                background-position: 10% 5%, 90% 5%, 5% 95%, 95% 90%, 45% 55%;
+            }
+        }
+
+        /* 軸ラベルの縦書きCSS (モダンな書き方) */
+        .writing-mode-vertical-rl {
+            writing-mode: vertical-rl;
+            text-orientation: upright; /* 文字を正立させる */
+        }
+
+        /* ツールチップのアニメーション */
+        .group:hover .tooltip {
+            visibility: visible;
+            opacity: 1;
+            transform: translate(-50%, -10px); /* 少し上に移動するアニメーション */
+        }
+        .tooltip {
+            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+        }
+
+        /* スクロールバーのカスタムデザイン */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
         }
     </style>
 </head>
-<body class="bg-gray-100 text-gray-800 antialiased">
+<body class="antialiased text-gray-200 relative overflow-x-hidden">
 
-    <!-- 1. タイトルセクション -->
-    <section class="bg-[#0d47a1] text-white py-16 md:py-24">
+    <!-- 1. タイトルセクション --><section class="relative py-16 md:py-24 z-10">
         <div class="container mx-auto px-4 text-center">
-            <h1 class="text-4xl md:text-6xl font-bold mb-4">
+            <h1 class="text-4xl md:text-6xl font-bold mb-4 text-white drop-shadow-lg animate-fade-in-down">
                 人の成長戦略会議 #2
             </h1>
-            <p class="text-xl md:text-2xl opacity-90">
+            <p class="text-xl md:text-2xl opacity-80 text-gray-300 drop-shadow animate-fade-in-up">
                 全社横断 課題クラスターマップ
             </p>
         </div>
+        <!-- セクションの区切り線をグラデーションで美しく --><div class="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-purple-500 to-transparent animate-pulse-light"></div>
     </section>
 
-    <!-- 2. 4象限バブルチャートセクション -->
-    <section class="container mx-auto px-4 py-16">
-        <h2 class="text-3xl font-bold text-center mb-16 text-gray-900">
+    <!-- 2. 4象限バブルチャートセクション --><section class="container mx-auto px-4 py-16 relative z-10">
+        <h2 class="text-3xl font-bold text-center mb-16 text-white drop-shadow-md animate-fade-in">
             4象限 課題クラスターマップ
         </h2>
 
-        <!-- レスポンシブ対応のため、スマホではラベルを非表示にし、チャートは縦積み -->
-        <!-- PC表示 (md:) -->
-        <div class="hidden md:block max-w-7xl mx-auto relative">
-            <!-- 軸ラベル -->
-            <div class="absolute top-0 left-1/2 -translate-x-1/2 -mt-10 text-xl font-bold text-gray-700 whitespace-nowrap">マネジメント層の課題</div>
-            <div class="absolute bottom-0 left-1/2 -translate-x-1/2 -mb-10 text-xl font-bold text-gray-700 whitespace-nowrap">現場層の課題</div>
-            <div class="absolute top-1/2 left-0 -translate-y-1/2 -ml-14 text-xl font-bold text-gray-700 writing-mode-vertical-rl rotate-180 whitespace-nowrap">メンタル・士気</div>
-            <div class="absolute top-1/2 right-0 -translate-y-1/2 -mr-14 text-xl font-bold text-gray-700 writing-mode-vertical-rl whitespace-nowrap">スキル・成長</div>
+        <!-- レスポンシブ対応のため、スマホではラベルを非表示にし、チャートは縦積み --><!-- PC表示 (md:) --><div class="hidden md:block max-w-7xl mx-auto relative p-8 bg-black bg-opacity-30 backdrop-blur-sm rounded-3xl shadow-2xl border border-gray-700/50 animate-fade-in-delay">
+            <!-- 軸ラベル --><div class="absolute top-0 left-1/2 -translate-x-1/2 -mt-12 text-xl font-bold text-gray-400 whitespace-nowrap animate-slide-in-top">マネジメント層の課題</div>
+            <div class="absolute bottom-0 left-1/2 -translate-x-1/2 -mb-12 text-xl font-bold text-gray-400 whitespace-nowrap animate-slide-in-bottom">現場層の課題</div>
+            <div class="absolute top-1/2 left-0 -translate-y-1/2 -ml-16 text-xl font-bold text-gray-400 writing-mode-vertical-rl rotate-180 whitespace-nowrap animate-slide-in-left">メンタル・士気</div>
+            <div class="absolute top-1/2 right-0 -translate-y-1/2 -mr-16 text-xl font-bold text-gray-400 writing-mode-vertical-rl whitespace-nowrap animate-slide-in-right">スキル・成長</div>
             
-            <!-- 軸線 -->
-            <div class="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-0.5 bg-gray-500 z-0"></div>
-            <div class="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-0.5 bg-gray-500 z-0"></div>
+            <!-- 軸線 (より洗練された光るデザインに) --><div class="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-0.5 bg-gradient-to-b from-transparent via-purple-500 to-transparent shadow-glow z-0"></div>
+            <div class="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-0.5 bg-gradient-to-r from-transparent via-purple-500 to-transparent shadow-glow z-0"></div>
 
-            <!-- 4象限グリッド -->
-            <div class="relative grid grid-cols-2 grid-rows-2 border border-gray-400 rounded-lg overflow-hidden z-10">
-                <!-- 象限③ (左上) -->
-                <div id="quadrant-3" class="bg-[#eff6ff] p-6 min-h-[400px] flex flex-wrap gap-4 items-center justify-center content-center border-r border-b border-gray-400/50">
-                    <!-- JSでバブルを挿入 -->
-                </div>
+            <!-- 4象限グリッド --><div class="relative grid grid-cols-2 grid-rows-2 rounded-2xl z-10 border border-gray-700/30">
+                <!-- 象限③ (左上) --><div id="quadrant-3" class="bg-gradient-to-br from-[#1A203F] to-[#0A102F] p-6 min-h-[400px] flex flex-wrap gap-6 items-center justify-center content-center border-r border-b border-gray-700/30">
+                    <!-- JSでバブルを挿入 --></div>
                 
-                <!-- 象限① (右上) -->
-                <div id="quadrant-1" class="bg-[#f0fdf4] p-6 min-h-[400px] flex flex-wrap gap-4 items-center justify-center content-center border-l border-b border-gray-400/50">
-                    <!-- JSでバブルを挿入 -->
-                </div>
+                <!-- 象限① (右上) --><div id="quadrant-1" class="bg-gradient-to-bl from-[#1A3F20] to-[#0A2F10] p-6 min-h-[400px] flex flex-wrap gap-6 items-center justify-center content-center border-l border-b border-gray-700/30">
+                    <!-- JSでバブルを挿入 --></div>
 
-                <!-- 象限④ (左下) -->
-                <div id="quadrant-4" class="bg-[#fef2f2] p-6 min-h-[400px] flex flex-wrap gap-4 items-center justify-center content-center border-r border-t border-gray-400/50">
-                    <!-- JSでバブルを挿入 -->
-                </div>
+                <!-- 象限④ (左下) --><div id="quadrant-4" class="bg-gradient-to-tr from-[#3F1A20] to-[#2F0A10] p-6 min-h-[400px] flex flex-wrap gap-6 items-center justify-center content-center border-r border-t border-gray-700/30">
+                    <!-- JSでバブルを挿入 --></div>
                 
-                <!-- 象限② (右下) -->
-                <div id="quadrant-2" class="bg-[#fefce8] p-6 min-h-[400px] flex flex-wrap gap-4 items-center justify-center content-center border-l border-t border-gray-400/50">
-                    <!-- JSでバブルを挿入 -->
-                </div>
+                <!-- 象限② (右下) --><div id="quadrant-2" class="bg-gradient-to-tl from-[#3F3A1A] to-[#2F2A0A] p-6 min-h-[400px] flex flex-wrap gap-6 items-center justify-center content-center border-l border-t border-gray-700/30">
+                    <!-- JSでバブルを挿入 --></div>
             </div>
         </div>
 
-        <!-- スマホ表示 (縦積み) -->
-        <div class="md:hidden space-y-8">
-            <!-- 象限③ (左上) -->
-            <div>
-                <h3 class="font-bold text-lg text-center mb-2 p-2 bg-blue-100 text-blue-800 rounded-t-lg">③ マネ×メンタル</h3>
-                <div id="quadrant-3-mobile" class="bg-[#eff6ff] p-4 min-h-[250px] flex flex-wrap gap-4 items-center justify-center content-center rounded-b-lg border border-gray-300"></div>
+        <!-- スマホ表示 (縦積み) --><div class="md:hidden space-y-8 animate-fade-in-delay">
+            <!-- 象限③ (左上) --><div class="p-4 bg-black bg-opacity-30 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-700/50">
+                <h3 class="font-bold text-lg text-center mb-4 p-2 bg-gradient-to-r from-blue-700 to-blue-900 text-white rounded-lg shadow-md animate-pulse-light">③ マネ×メンタル</h3>
+                <div id="quadrant-3-mobile" class="bg-gradient-to-br from-[#1A203F] to-[#0A102F] p-4 min-h-[250px] flex flex-wrap gap-4 items-center justify-center content-center rounded-lg border border-gray-700/30"></div>
             </div>
-            <!-- 象限① (右上) -->
-            <div>
-                <h3 class="font-bold text-lg text-center mb-2 p-2 bg-green-100 text-green-800 rounded-t-lg">① マネ×スキル</h3>
-                <div id="quadrant-1-mobile" class="bg-[#f0fdf4] p-4 min-h-[250px] flex flex-wrap gap-4 items-center justify-center content-center rounded-b-lg border border-gray-300"></div>
+            <!-- 象限① (右上) --><div class="p-4 bg-black bg-opacity-30 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-700/50">
+                <h3 class="font-bold text-lg text-center mb-4 p-2 bg-gradient-to-r from-green-700 to-green-900 text-white rounded-lg shadow-md animate-pulse-light">① マネ×スキル</h3>
+                <div id="quadrant-1-mobile" class="bg-gradient-to-bl from-[#1A3F20] to-[#0A2F10] p-4 min-h-[250px] flex flex-wrap gap-4 items-center justify-center content-center rounded-lg border border-gray-700/30"></div>
             </div>
-            <!-- 象限④ (左下) -->
-            <div>
-                <h3 class="font-bold text-lg text-center mb-2 p-2 bg-red-100 text-red-800 rounded-t-lg">④ 現場×メンタル</h3>
-                <div id="quadrant-4-mobile" class="bg-[#fef2f2] p-4 min-h-[250px] flex flex-wrap gap-4 items-center justify-center content-center rounded-b-lg border border-gray-300"></div>
+            <!-- 象限④ (左下) --><div class="p-4 bg-black bg-opacity-30 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-700/50">
+                <h3 class="font-bold text-lg text-center mb-4 p-2 bg-gradient-to-r from-red-700 to-red-900 text-white rounded-lg shadow-md animate-pulse-light">④ 現場×メンタル</h3>
+                <div id="quadrant-4-mobile" class="bg-gradient-to-tr from-[#3F1A20] to-[#2F0A10] p-4 min-h-[250px] flex flex-wrap gap-4 items-center justify-center content-center rounded-lg border border-gray-700/30"></div>
             </div>
-            <!-- 象限② (右下) -->
-            <div>
-                <h3 class="font-bold text-lg text-center mb-2 p-2 bg-yellow-100 text-yellow-800 rounded-t-lg">② 現場×スキル</h3>
-                <div id="quadrant-2-mobile" class="bg-[#fefce8] p-4 min-h-[250px] flex flex-wrap gap-4 items-center justify-center content-center rounded-b-lg border border-gray-300"></div>
+            <!-- 象限② (右下) --><div class="p-4 bg-black bg-opacity-30 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-700/50">
+                <h3 class="font-bold text-lg text-center mb-4 p-2 bg-gradient-to-r from-yellow-700 to-yellow-900 text-white rounded-lg shadow-md animate-pulse-light">② 現場×スキル</h3>
+                <div id="quadrant-2-mobile" class="bg-gradient-to-tl from-[#3F3A1A] to-[#2F2A0A] p-4 min-h-[250px] flex flex-wrap gap-4 items-center justify-center content-center rounded-lg border border-gray-700/30"></div>
             </div>
         </div>
     </section>
 
-    <!-- 3. 総括セクション -->
-    <section class="bg-white py-16">
-        <div class="container mx-auto px-4 max-w-4xl">
-            <h2 class="text-3xl font-bold text-center mb-10 text-gray-900">
+    <!-- 3. 総括セクション --><section class="relative py-16 z-10">
+        <div class="container mx-auto px-4 max-w-4xl p-8 bg-black bg-opacity-30 backdrop-blur-sm rounded-3xl shadow-2xl border border-gray-700/50 animate-fade-in-delay">
+            <h2 class="text-3xl font-bold text-center mb-10 text-white drop-shadow-md animate-fade-in">
                 総括と傾向
             </h2>
             <div class="space-y-8">
-                <!-- 全体の傾向 -->
-                <div class="p-5 border-l-4 border-blue-600 bg-blue-50 rounded-r-lg shadow">
-                    <h3 class="font-bold text-xl text-blue-800 mb-3">
+                <!-- 全体の傾向 --><div class="p-6 border-l-4 border-blue-500 bg-gradient-to-r from-blue-900/40 to-transparent rounded-r-lg shadow-lg hover:shadow-xl transition-shadow duration-300 animate-slide-in-left">
+                    <h3 class="font-bold text-xl text-blue-300 mb-3">
                         全体の傾向
                     </h3>
-                    <ul class="list-disc pl-5 space-y-3 text-gray-700">
+                    <ul class="list-disc pl-5 space-y-3 text-gray-300">
                         <li>
                             最も広範かつ深刻な課題は、象限④（現場×メンタル）に集中している。特に「会社の将来性・HMP統合への不安」は、複数の局で共通して高い数値を示しており、現場の士気に直結する最大の懸念事項となっている。
                         </li>
@@ -121,12 +165,11 @@
                     </ul>
                 </div>
 
-                <!-- 課題の相関 -->
-                <div class="p-5 border-l-4 border-green-600 bg-green-50 rounded-r-lg shadow">
-                    <h3 class="font-bold text-xl text-green-800 mb-3">
+                <!-- 課題の相関 --><div class="p-6 border-l-4 border-green-500 bg-gradient-to-r from-green-900/40 to-transparent rounded-r-lg shadow-lg hover:shadow-xl transition-shadow duration-300 animate-slide-in-right">
+                    <h3 class="font-bold text-xl text-green-300 mb-3">
                         課題の相関
                     </h3>
-                    <ul class="list-disc pl-5 space-y-3 text-gray-700">
+                    <ul class="list-disc pl-5 space-y-3 text-gray-300">
                         <li>
                             象限③の「エキスパート職の処遇・制度」問題は、対象者の象限②「キャリアビジョン欠如」や象限④「将来不安」を直接引き起こす強い相関関係が見られる。
                         </li>
@@ -142,7 +185,7 @@
         </div>
     </section>
 
-    <footer class="text-center py-8 text-gray-500 text-sm">
+    <footer class="text-center py-8 text-gray-500 text-sm z-10 relative">
         &copy; 2025 人材開発室
     </footer>
 
@@ -280,15 +323,15 @@
         function getBubbleColors(color) {
             switch (color) {
                 case 'green':
-                    return 'bg-green-200 text-green-900 border-4 border-green-400 hover:bg-green-300';
+                    return 'bg-gradient-to-br from-green-600 to-green-800 text-green-100 border-2 border-green-400/50 hover:from-green-500 hover:to-green-700';
                 case 'yellow':
-                    return 'bg-yellow-100 text-yellow-900 border-4 border-yellow-300 hover:bg-yellow-200';
+                    return 'bg-gradient-to-br from-yellow-600 to-yellow-800 text-yellow-100 border-2 border-yellow-400/50 hover:from-yellow-500 hover:to-yellow-700';
                 case 'blue':
-                    return 'bg-blue-200 text-blue-900 border-4 border-blue-400 hover:bg-blue-300';
+                    return 'bg-gradient-to-br from-blue-600 to-blue-800 text-blue-100 border-2 border-blue-400/50 hover:from-blue-500 hover:to-blue-700';
                 case 'red':
-                    return 'bg-red-200 text-red-900 border-4 border-red-400 hover:bg-red-300';
+                    return 'bg-gradient-to-br from-red-600 to-red-800 text-red-100 border-2 border-red-400/50 hover:from-red-500 hover:to-red-700';
                 default:
-                    return 'bg-gray-200 text-gray-900 border-4 border-gray-400 hover:bg-gray-300';
+                    return 'bg-gradient-to-br from-gray-600 to-gray-800 text-gray-100 border-2 border-gray-400/50 hover:from-gray-500 hover:to-gray-700';
             }
         }
 
@@ -316,23 +359,20 @@
             }).join('');
 
             return `
-                <div class="relative group z-20">
-                    <!-- バブル本体 -->
-                    <div class="${sizeClass} ${colorClasses} rounded-full flex items-center justify-center text-center p-3 cursor-pointer shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl">
-                        <span class="text-xs md:text-sm font-bold leading-tight">
+                <div class="relative group z-20 animate-pop-in">
+                    <!-- バブル本体 --><div class="${sizeClass} ${colorClasses} rounded-full flex items-center justify-center text-center p-3 cursor-pointer shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-2xl ring-2 ring-transparent group-hover:ring-offset-2 group-hover:ring-offset-black group-hover:ring-white/50">
+                        <span class="text-xs md:text-sm font-bold leading-tight drop-shadow-md">
                             ${cluster.name}
                             <br>
                             (${cluster.percentage.toFixed(1)}%)
                         </span>
                     </div>
                     
-                    <!-- ツールチップ -->
-                    <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 w-72 md:w-96 max-h-80 overflow-y-auto bg-gray-900 text-white text-xs rounded-lg shadow-xl p-4 z-50 invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-opacity duration-300">
+                    <!-- ツールチップ --><div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 w-72 md:w-96 bg-gray-900 bg-opacity-95 text-white text-xs rounded-lg shadow-xl p-4 z-50 invisible opacity-0 tooltip">
                         <ul class="list-disc pl-4 space-y-2">
                             ${voicesHTML}
                         </ul>
-                        <!-- ツールチップの矢印 -->
-                        <div class="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-x-8 border-x-transparent border-t-8 border-t-gray-900"></div>
+                        <!-- ツールチップの矢印 --><div class="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-x-8 border-x-transparent border-t-8 border-t-gray-900/95"></div>
                     </div>
                 </div>
             `;
@@ -369,6 +409,71 @@
             if(containers['quadrant-4-mobile']) containers['quadrant-4-mobile'].innerHTML = html_q4;
         });
     </script>
+    <!-- 追加のアニメーションスタイル --><style>
+        @keyframes fade-in-down {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fade-in-up {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fade-in {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slide-in-left {
+            from { opacity: 0; transform: translateX(-50px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes slide-in-right {
+            from { opacity: 0; transform: translateX(50px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes slide-in-top {
+            from { opacity: 0; transform: translateY(-50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes slide-in-bottom {
+            from { opacity: 0; transform: translateY(50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes pop-in {
+            0% { opacity: 0; transform: scale(0.8); }
+            80% { opacity: 1; transform: scale(1.05); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        @keyframes pulse-light {
+            0% { filter: brightness(1); }
+            50% { filter: brightness(1.2); }
+            100% { filter: brightness(1); }
+        }
 
+        .animate-fade-in-down { animation: fade-in-down 0.8s ease-out forwards; }
+        .animate-fade-in-up { animation: fade-in-up 0.8s ease-out 0.2s forwards; opacity: 0; }
+        .animate-fade-in { animation: fade-in 1s ease-out 0.5s forwards; opacity: 0; }
+        .animate-fade-in-delay { animation: fade-in 1s ease-out 0.8s forwards; opacity: 0; }
+        .animate-slide-in-left { animation: slide-in-left 0.8s ease-out 1s forwards; opacity: 0; }
+        .animate-slide-in-right { animation: slide-in-right 0.8s ease-out 1.1s forwards; opacity: 0; }
+        .animate-slide-in-top { animation: slide-in-top 0.8s ease-out 1.2s forwards; opacity: 0; }
+        .animate-slide-in-bottom { animation: slide-in-bottom 0.8s ease-out 1.3s forwards; opacity: 0; }
+        .animate-pop-in { animation: pop-in 0.6s cubic-bezier(0.68, -0.55, 0.27, 1.55) forwards; opacity: 0; } /* 各バブルに適用するためにJSで遅延処理を追加する必要があるかも */
+        .animate-pulse-light { animation: pulse-light 3s infinite ease-in-out; }
+
+        /* 軸線の光る効果 */
+        .shadow-glow {
+            box-shadow: 0 0 15px rgba(168, 85, 247, 0.7); /* purple-500 */
+        }
+        .writing-mode-vertical-rl {
+            writing-mode: vertical-rl;
+            text-orientation: upright;
+        }
+
+        /* ツールチップのオーバーフローを考慮してz-indexを調整 */
+        .group .tooltip {
+            z-index: 100; /* 最前面に表示 */
+        }
+    </style>
 </body>
 </html>
+
