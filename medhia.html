@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>人の成長戦略会議 #2 課題マップ</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts Mplus 1p -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Mplus+1p:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* Mplus 1p フォントを適用 */
+        body {
+            font-family: 'Mplus 1p', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800 antialiased">
+
+    <!-- 1. タイトルセクション -->
+    <section class="bg-[#0d47a1] text-white py-16 md:py-24">
+        <div class="container mx-auto px-4 text-center">
+            <h1 class="text-4xl md:text-6xl font-bold mb-4">
+                人の成長戦略会議 #2
+            </h1>
+            <p class="text-xl md:text-2xl opacity-90">
+                全社横断 課題クラスターマップ
+            </p>
+        </div>
+    </section>
+
+    <!-- 2. 4象限バブルチャートセクション -->
+    <section class="container mx-auto px-4 py-16">
+        <h2 class="text-3xl font-bold text-center mb-16 text-gray-900">
+            4象限 課題クラスターマップ
+        </h2>
+
+        <!-- レスポンシブ対応のため、スマホではラベルを非表示にし、チャートは縦積み -->
+        <!-- PC表示 (md:) -->
+        <div class="hidden md:block max-w-7xl mx-auto relative">
+            <!-- 軸ラベル -->
+            <div class="absolute top-0 left-1/2 -translate-x-1/2 -mt-10 text-xl font-bold text-gray-700 whitespace-nowrap">マネジメント層の課題</div>
+            <div class="absolute bottom-0 left-1/2 -translate-x-1/2 -mb-10 text-xl font-bold text-gray-700 whitespace-nowrap">現場層の課題</div>
+            <div class="absolute top-1/2 left-0 -translate-y-1/2 -ml-14 text-xl font-bold text-gray-700 writing-mode-vertical-rl rotate-180 whitespace-nowrap">メンタル・士気</div>
+            <div class="absolute top-1/2 right-0 -translate-y-1/2 -mr-14 text-xl font-bold text-gray-700 writing-mode-vertical-rl whitespace-nowrap">スキル・成長</div>
+            
+            <!-- 軸線 -->
+            <div class="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-0.5 bg-gray-500 z-0"></div>
+            <div class="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-0.5 bg-gray-500 z-0"></div>
+
+            <!-- 4象限グリッド -->
+            <div class="relative grid grid-cols-2 grid-rows-2 border border-gray-400 rounded-lg overflow-hidden z-10">
+                <!-- 象限③ (左上) -->
+                <div id="quadrant-3" class="bg-[#eff6ff] p-6 min-h-[400px] flex flex-wrap gap-4 items-center justify-center content-center border-r border-b border-gray-400/50">
+                    <!-- JSでバブルを挿入 -->
+                </div>
+                
+                <!-- 象限① (右上) -->
+                <div id="quadrant-1" class="bg-[#f0fdf4] p-6 min-h-[400px] flex flex-wrap gap-4 items-center justify-center content-center border-l border-b border-gray-400/50">
+                    <!-- JSでバブルを挿入 -->
+                </div>
+
+                <!-- 象限④ (左下) -->
+                <div id="quadrant-4" class="bg-[#fef2f2] p-6 min-h-[400px] flex flex-wrap gap-4 items-center justify-center content-center border-r border-t border-gray-400/50">
+                    <!-- JSでバブルを挿入 -->
+                </div>
+                
+                <!-- 象限② (右下) -->
+                <div id="quadrant-2" class="bg-[#fefce8] p-6 min-h-[400px] flex flex-wrap gap-4 items-center justify-center content-center border-l border-t border-gray-400/50">
+                    <!-- JSでバブルを挿入 -->
+                </div>
+            </div>
+        </div>
+
+        <!-- スマホ表示 (縦積み) -->
+        <div class="md:hidden space-y-8">
+            <!-- 象限③ (左上) -->
+            <div>
+                <h3 class="font-bold text-lg text-center mb-2 p-2 bg-blue-100 text-blue-800 rounded-t-lg">③ マネ×メンタル</h3>
+                <div id="quadrant-3-mobile" class="bg-[#eff6ff] p-4 min-h-[250px] flex flex-wrap gap-4 items-center justify-center content-center rounded-b-lg border border-gray-300"></div>
+            </div>
+            <!-- 象限① (右上) -->
+            <div>
+                <h3 class="font-bold text-lg text-center mb-2 p-2 bg-green-100 text-green-800 rounded-t-lg">① マネ×スキル</h3>
+                <div id="quadrant-1-mobile" class="bg-[#f0fdf4] p-4 min-h-[250px] flex flex-wrap gap-4 items-center justify-center content-center rounded-b-lg border border-gray-300"></div>
+            </div>
+            <!-- 象限④ (左下) -->
+            <div>
+                <h3 class="font-bold text-lg text-center mb-2 p-2 bg-red-100 text-red-800 rounded-t-lg">④ 現場×メンタル</h3>
+                <div id="quadrant-4-mobile" class="bg-[#fef2f2] p-4 min-h-[250px] flex flex-wrap gap-4 items-center justify-center content-center rounded-b-lg border border-gray-300"></div>
+            </div>
+            <!-- 象限② (右下) -->
+            <div>
+                <h3 class="font-bold text-lg text-center mb-2 p-2 bg-yellow-100 text-yellow-800 rounded-t-lg">② 現場×スキル</h3>
+                <div id="quadrant-2-mobile" class="bg-[#fefce8] p-4 min-h-[250px] flex flex-wrap gap-4 items-center justify-center content-center rounded-b-lg border border-gray-300"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 3. 総括セクション -->
+    <section class="bg-white py-16">
+        <div class="container mx-auto px-4 max-w-4xl">
+            <h2 class="text-3xl font-bold text-center mb-10 text-gray-900">
+                総括と傾向
+            </h2>
+            <div class="space-y-8">
+                <!-- 全体の傾向 -->
+                <div class="p-5 border-l-4 border-blue-600 bg-blue-50 rounded-r-lg shadow">
+                    <h3 class="font-bold text-xl text-blue-800 mb-3">
+                        全体の傾向
+                    </h3>
+                    <ul class="list-disc pl-5 space-y-3 text-gray-700">
+                        <li>
+                            最も広範かつ深刻な課題は、象限④（現場×メンタル）に集中している。特に「会社の将来性・HMP統合への不安」は、複数の局で共通して高い数値を示しており、現場の士気に直結する最大の懸念事項となっている。
+                        </li>
+                        <li>
+                            次に大きな課題クラスターは象限②（現場×スキル）であり、特に若手やエキスパート職から「キャリアビジョン/成長実感の欠如」を訴える声が強い。ロールモデルの不在や、新体制下での貢献実感の得にくさが背景にある。
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- 課題の相関 -->
+                <div class="p-5 border-l-4 border-green-600 bg-green-50 rounded-r-lg shadow">
+                    <h3 class="font-bold text-xl text-green-800 mb-3">
+                        課題の相関
+                    </h3>
+                    <ul class="list-disc pl-5 space-y-3 text-gray-700">
+                        <li>
+                            象限③の「エキスパート職の処遇・制度」問題は、対象者の象限②「キャリアビジョン欠如」や象限④「将来不安」を直接引き起こす強い相関関係が見られる。
+                        </li>
+                        <li>
+                            象限③の「部長陣のマネジメント課題」（例: 状況把握の不足）は、象限④の「部下の『窮々』とした状態」や「上司との関係悪化」に直結しており、マネジメントの質が現場のメンタルに与える影響は大きい。
+                        </li>
+                        <li>
+                            象限①の戦略的な「異能・専門人材の採用」の必要性は、象限②の現場が感じる「新領域への対応」不安と連動しており、組織のスキル変革が急務であることを示唆している。
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="text-center py-8 text-gray-500 text-sm">
+        &copy; 2025 人材開発室
+    </footer>
+
+
+    <script>
+        // C. データソース (PDFから抽出・再構成)
+        const clusterData = {
+            q1: [ // 象限① (右上: マネ×スキル)
+                {
+                    name: "異能・専門人材の採用/育成",
+                    percentage: 7.5,
+                    color: "green",
+                    voices: [
+                        "「異能人材」をどう採用していくかが課題 (P戦 長瀬)",
+                        "AI、クラウドに精通してほしいと要望が来るが、若手だけでは対応できない (P戦 長瀬)",
+                        "迅速にプロトタイプを供給する役割が求められる (P戦 長瀬)",
+                        "シニア人材の活用...ネクストキャリアを考えるシニア層 (G推進)",
+                        "若手育成に関する懸念 (G推進)"
+                    ]
+                }
+            ],
+            q2: [ // 象限② (右下: 現場×スキル)
+                {
+                    name: "キャリアビジョン/成長実感の欠如",
+                    percentage: 15.0,
+                    color: "yellow",
+                    voices: [
+                        "「自分の展望やキャリアイメージが持てるか」が悪化した人が多い (AaaS 古閑)",
+                        "若手が「キャリアイメージ」に× (AaaS 飯塚)",
+                        "同期と比較して、自分のスキルに自信がない (AaaS 吉本)",
+                        "キャリアイメージ...「持てなくなっている」層 (新雑)",
+                        "エキスパートたちも「ここにいてどうなるんだっけ?」 (新雑 廣瀬)",
+                        "「個人の展望」「キャリアイメージが持てる」が...悪くなった (P戦)",
+                        "純粋に「自分の将来」について不安 (P戦 田代)",
+                        "ロールモデルが見えにくい (P戦 長瀬)",
+                        "貢献の手触り感が掴みにくい (P戦 田代)",
+                        "エキスパート職の社員...「この先どうしようか」と将来を憂慮 (TVR 木村)"
+                    ]
+                },
+                {
+                    name: "新領域・変化への対応",
+                    percentage: 9.0,
+                    color: "yellow",
+                    voices: [
+                        "「もっとフロントに立て」と言われ、経験もなく自信もない (AaaS 飯塚)",
+                        "宮下は...明確に「これがしたい」というタイプではない (AP 梅本)",
+                        "「博報堂という変化」に対応できているかが伸長を分けている (コンクリ)",
+                        "知識(コンテンツビジネス・ライツ)の欠如 (コンクリ)",
+                        "知識習得は自己責任...プロとして自己鍛錬(リスキリング)が求められる (コンクリ)",
+                        "「社内外交」が重要 (コンクリ)"
+                    ]
+                }
+            ],
+            q3: [ // 象限③ (左上: マネ×メンタル)
+                {
+                    name: "エキスパート職の処遇・制度",
+                    percentage: 10.5,
+                    color: "blue",
+                    voices: [
+                        "エキスパート職の負荷が上がり続け、モチベーションコントロールがしんどい (新雑 朝倉部長 via 恒川)",
+                        "エキスパートが報われる仕組み (新雑)",
+                        "HMP統合でエキスパート職を今後どうするのか? (新雑 藤川)",
+                        "エキスパート職の給与問題...「3年間ステイ」制度が根本的問題 (TVR 佐藤大)",
+                        "制度が変わらなければ不満は解決できない (TVR 佐藤大)"
+                    ]
+                },
+                {
+                    name: "部長陣のマネジメント課題",
+                    percentage: 9.0,
+                    color: "blue",
+                    voices: [
+                        "部長陣がどこまで(部下を)みえているか、に違和感 (新雑 恒川)",
+                        "森川部長の部は「窮々」メンバーが5人もいるのに...ケアが何も語られなかった (新雑 恒川)",
+                        "部下から「彼(森川部長)に話す気がない」 (新雑 恒川)",
+                        "石井部長の状況:マネジメントの難しさに直面 (OA)",
+                        "ミッションを背負うのか...経営層からの方針表明が強く求められています (OA)",
+                        "プロ意識の要求...乗ってこない社員は不適合と判断 (コンクリ)",
+                        "ラジオ部門は「個人商店」的文化...孤立を防ぐ (TVR 木村)"
+                    ]
+                }
+            ],
+            q4: [ // 象限④ (左下: 現場×メンタル)
+                {
+                    name: "会社の将来性・HMP統合への不安",
+                    percentage: 18.0,
+                    color: "red",
+                    voices: [
+                        "「会社の現状や将来性に不安がある」と回答した社員が43% (AP)",
+                        "会社統合の影響や、局の数字実績が厳しい (AP)",
+                        "メディアフロントをどう実行するかが...決まっていない (AP 濱崎)",
+                        "「会社の現状や将来性に不安がある」...特に若手 (基盤開発)",
+                        "テクノロジーズの社長や役員が相次いで退職 (基盤開発 藤本)",
+                        "「会社の現状や将来性に不安」が40% (AaaS)",
+                        "「人事や処遇が不公平」が25% (AaaS)",
+                        "半数 (50%) がチェック (P戦)",
+                        "競合を見て「自社は大丈夫か」 (P戦 田代)",
+                        "旧MP社員の閉塞感...「メディア事業の先行き不安」 (OA)",
+                        "ミッションの曖昧化 (OA)",
+                        "PMIが円滑に進んでいない (OA)",
+                        "メディアユニットの社員が「会社の将来性」に不安を感じるのは、当然 (TVR 広瀬)"
+                    ]
+                },
+                {
+                    name: "個別のメンタル不調・孤立",
+                    percentage: 15.0,
+                    color: "red",
+                    voices: [
+                        "松本: ...かなり苦しんでいる様子。顔を見ればわかるし、元気がない。 (AP 川上)",
+                        "新人2名...「もっと会社に来たい」 「所属意識が持てない」 (基盤開発 恒川)",
+                        "出社しても先輩がいないと、かえって寂しさが増す (基盤開発 糸永)",
+                        "「忙しい」(突発的な仕事が多い) (新雑)",
+                        "「上司との関係」が相対的に悪い傾向 (新雑)",
+                        "「窮々」「悶々」ゾーンの人は...継続 (新雑)",
+                        "業務負荷に関する認識の違い (G推進)",
+                        "出向者の位置づけ...「出された」と感じている (G推進)",
+                        "藤井氏の適応課題:期待と現実のギャップ (OA)",
+                        "井上氏の再配置と懸念...不調時に近い状態 (OA)",
+                        "「思ったままを話せる」...全社平均を下回る (コンクリ)",
+                        "出社率の低さと要因 (コンクリ)",
+                        "3部は...「努力しても決まらない」状況がストレス (TVR 佐々木)"
+                    ]
+                }
+            ]
+        };
+
+        // バブルのサイズを決定する (Tailwindクラス)
+        function getBubbleSize(percentage) {
+            if (percentage < 8) return 'w-24 h-24 md:w-32 md:h-32';
+            if (percentage < 12) return 'w-28 h-28 md:w-40 md:h-40';
+            if (percentage < 16) return 'w-32 h-32 md:w-48 md:h-48';
+            return 'w-36 h-36 md:w-56 md:h-56'; // 16以上
+        }
+
+        // バブルの色を決定する (Tailwindクラス)
+        function getBubbleColors(color) {
+            switch (color) {
+                case 'green':
+                    return 'bg-green-200 text-green-900 border-4 border-green-400 hover:bg-green-300';
+                case 'yellow':
+                    return 'bg-yellow-100 text-yellow-900 border-4 border-yellow-300 hover:bg-yellow-200';
+                case 'blue':
+                    return 'bg-blue-200 text-blue-900 border-4 border-blue-400 hover:bg-blue-300';
+                case 'red':
+                    return 'bg-red-200 text-red-900 border-4 border-red-400 hover:bg-red-300';
+                default:
+                    return 'bg-gray-200 text-gray-900 border-4 border-gray-400 hover:bg-gray-300';
+            }
+        }
+
+        // 「生の声」から発言者情報をパースする
+        function parseVoice(voice) {
+            const match = voice.match(/^(.*?)(\(.*\))$/);
+            if (match) {
+                return { text: match[1].trim(), speaker: match[2] };
+            }
+            return { text: voice, speaker: null };
+        }
+
+        // バブルとツールチップを生成する関数
+        function createBubbleHTML(cluster) {
+            const sizeClass = getBubbleSize(cluster.percentage);
+            const colorClasses = getBubbleColors(cluster.color);
+
+            // ツールチップ内の「生の声」リストを生成
+            let voicesHTML = cluster.voices.map(voice => {
+                const { text, speaker } = parseVoice(voice);
+                let speakerHTML = speaker 
+                    ? `<span class="block text-gray-400 text-xs italic mt-1">${speaker}</span>` 
+                    : '';
+                return `<li class="break-words">${text}${speakerHTML}</li>`;
+            }).join('');
+
+            return `
+                <div class="relative group z-20">
+                    <!-- バブル本体 -->
+                    <div class="${sizeClass} ${colorClasses} rounded-full flex items-center justify-center text-center p-3 cursor-pointer shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl">
+                        <span class="text-xs md:text-sm font-bold leading-tight">
+                            ${cluster.name}
+                            <br>
+                            (${cluster.percentage.toFixed(1)}%)
+                        </span>
+                    </div>
+                    
+                    <!-- ツールチップ -->
+                    <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 w-72 md:w-96 max-h-80 overflow-y-auto bg-gray-900 text-white text-xs rounded-lg shadow-xl p-4 z-50 invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-opacity duration-300">
+                        <ul class="list-disc pl-4 space-y-2">
+                            ${voicesHTML}
+                        </ul>
+                        <!-- ツールチップの矢印 -->
+                        <div class="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-x-8 border-x-transparent border-t-8 border-t-gray-900"></div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ページ読み込み時にバブルを描画する
+        document.addEventListener('DOMContentLoaded', () => {
+            const containers = {
+                'quadrant-1': document.getElementById('quadrant-1'),
+                'quadrant-2': document.getElementById('quadrant-2'),
+                'quadrant-3': document.getElementById('quadrant-3'),
+                'quadrant-4': document.getElementById('quadrant-4'),
+                'quadrant-1-mobile': document.getElementById('quadrant-1-mobile'),
+                'quadrant-2-mobile': document.getElementById('quadrant-2-mobile'),
+                'quadrant-3-mobile': document.getElementById('quadrant-3-mobile'),
+                'quadrant-4-mobile': document.getElementById('quadrant-4-mobile'),
+            };
+
+            let html_q1 = clusterData.q1.map(createBubbleHTML).join('');
+            let html_q2 = clusterData.q2.map(createBubbleHTML).join('');
+            let html_q3 = clusterData.q3.map(createBubbleHTML).join('');
+            let html_q4 = clusterData.q4.map(createBubbleHTML).join('');
+
+            // PC用コンテナに挿入
+            if(containers['quadrant-1']) containers['quadrant-1'].innerHTML = html_q1;
+            if(containers['quadrant-2']) containers['quadrant-2'].innerHTML = html_q2;
+            if(containers['quadrant-3']) containers['quadrant-3'].innerHTML = html_q3;
+            if(containers['quadrant-4']) containers['quadrant-4'].innerHTML = html_q4;
+
+            // モバイル用コンテナに挿入 (複製)
+            if(containers['quadrant-1-mobile']) containers['quadrant-1-mobile'].innerHTML = html_q1;
+            if(containers['quadrant-2-mobile']) containers['quadrant-2-mobile'].innerHTML = html_q2;
+            if(containers['quadrant-3-mobile']) containers['quadrant-3-mobile'].innerHTML = html_q3;
+            if(containers['quadrant-4-mobile']) containers['quadrant-4-mobile'].innerHTML = html_q4;
+        });
+    </script>
+
+</body>
+</html>
