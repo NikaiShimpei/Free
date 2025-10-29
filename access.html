@@ -3,409 +3,509 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>人の成長戦略会議 議事録分析</title>
+    <title>人の成長戦略会議 #2 課題マップ (新データ版)</title>
+    
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Mplus 1p -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Mplus+1p:wght@400;700&display=swap" rel="stylesheet">
+    
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap');
-        html, body {
-            /* スクロールを許可 */
-            overflow-y: auto;
-            margin: 0;
-            padding: 0;
-            background-color: #f3f4f6;
-        }
+        /* Mplus 1p フォントを適用 */
         body {
-            font-family: 'Noto Sans JP', 'Inter', sans-serif;
-            display: flex;
-            flex-direction: column; /* 垂直方向に並べる */
-            align-items: center; /* 中央揃え */
-        }
-        .page-container {
-            width: 90vw; 
-            max-width: 1200px; /* 最大幅を設定 */
-            margin: 2.5vh auto; /* 上下にマージン */
-            position: relative;
-        }
-        /* 各セクション（旧スライド）のスタイル */
-        .slide-content {
-            width: 100%;
-            padding: 3vh 3vw; 
-            box-sizing: border-box;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            margin-bottom: 4vh; /* セクション間のマージン */
+            font-family: 'Mplus 1p', sans-serif;
+            background-color: #000; /* 全体のデフォルト背景を黒に */
+            color: #e0e0e0; /* 基本の文字色を明るめに */
         }
 
-        .quadrant-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            grid-template-rows: 1fr 1fr;
-            width: 100%;
-            height: 80vh; /* グラフ領域の高さを確保 */
-            gap: 12px;
-            position: relative;
-        }
-        .quadrant-grid::before { /* Vertical axis */
-            content: '';
-            position: absolute;
-            top: 0;
-            bottom: 0;
-            left: 50%;
-            width: 2px;
-            background-color: #9ca3af;
-            transform: translateX(-50%);
-            z-index: 1;
-        }
-        .quadrant-grid::after { /* Horizontal axis */
-            content: '';
-            position: absolute;
-            left: 0;
-            right: 0;
-            top: 50%;
-            height: 2px;
-            background-color: #9ca3af;
-            transform: translateY(-50%);
-            z-index: 1;
-        }
-        .quadrant {
-            padding: 16px;
-            border-radius: 8px;
-            position: relative;
-            z-index: 2;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-        
-        /* 象限の背景色 */
-        .quadrant-1 { background-color: #f0fdf4; } /* マネ×スキル */
-        .quadrant-2 { background-color: #fefce8; } /* 現場×スキル */
-        .quadrant-3 { background-color: #eff6ff; } /* マネ×メンタル */
-        .quadrant-4 { background-color: #fef2f2; } /* 現場×メンタル */
-
-        .quadrant-title {
-            font-size: 1.1rem;
-            font-weight: 700;
-            margin-bottom: 12px;
-            text-align: center;
-        }
-        
-        /* バブルチャート用コンテナ */
-        .quadrant-clusters {
-            flex-grow: 1;
-            overflow: hidden; 
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 0;
-        }
-        
-        .cluster-bubble {
-            /* JavaScriptでサイズが設定される */
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            border-radius: 50%;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            border: 1px solid;
-            padding: 4px;
-            text-align: center;
-            line-height: 1.2;
-            word-break: keep-all; 
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-        
-        .cluster-name {
-            font-size: 0.9em; 
-            font-weight: 700;
-        }
-        .cluster-percentage {
-            font-size: 0.8em; 
-            margin-top: 2px;
-            opacity: 0.8;
-        }
-
-        /* クラスターの色分け */
-        .q1-bubble { background-color: #dcfce7; border-color: #86efac; color: #15803d; }
-        .q1-bubble:hover { background-color: #bbf7d0; transform: scale(1.05); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        
-        .q2-bubble { background-color: #fef9c3; border-color: #fde047; color: #a16207; }
-        .q2-bubble:hover { background-color: #fde047; transform: scale(1.05); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        
-        .q3-bubble { background-color: #dbeafe; border-color: #93c5fd; color: #1e40af; }
-        .q3-bubble:hover { background-color: #bfdbfe; transform: scale(1.05); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-
-        .q4-bubble { background-color: #fee2e2; border-color: #fca5a5; color: #b91c1c; }
-        .q4-bubble:hover { background-color: #fecaca; transform: scale(1.05); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-
-        .axis-label {
-            position: absolute;
-            font-weight: 700;
-            color: #4b5563;
-            background: white;
-            padding: 0 8px;
-            z-index: 3;
-            font-size: 0.9rem;
-        }
-        .axis-y-top { top: -10px; left: 50%; transform: translateX(-50%); }
-        .axis-y-bottom { bottom: -10px; left: 50%; transform: translateX(-50%); }
-        .axis-x-left { left: -14px; top: 50%; transform: translateY(-50%) rotate(-90deg); white-space: nowrap; }
-        .axis-x-right { right: -14px; top: 50%; transform: translateY(-50%) rotate(90deg); white-space: nowrap; }
-
-        /* ツールチップ */
-        #tooltip {
+        /* 背景グラデーション (body::before) */
+        body::before {
+            content: "";
             position: fixed;
-            display: none;
-            background-color: rgba(30, 41, 59, 0.95);
-            color: white;
-            padding: 12px 16px;
-            border-radius: 8px;
-            z-index: 100;
-            max-width: 320px;
-            font-size: 0.875rem;
-            line-height: 1.6;
-            pointer-events: none; 
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1; /* コンテンツの下に配置 */
+            opacity: 0.9; /* 少し透明度を持たせて深みを出す */
+            /* 複数のグラデーションを重ね合わせ */
+            background: 
+                radial-gradient(at 0% 0%, #3a0050 0%, transparent 70%),
+                radial-gradient(at 100% 0%, #0a012e 0%, transparent 70%),
+                radial-gradient(at 0% 100%, #8b0000 0%, transparent 70%),
+                radial-gradient(at 100% 100%, #0d015c 0%, transparent 70%),
+                radial-gradient(at 50% 50%, #4a0050 0%, transparent 70%);
+            background-blend-mode: screen; /* グラデーションの混合モード */
+            filter: blur(80px); /* ぼかし効果でなめらかに */
+            animation: backgroundShift 30s ease-in-out infinite alternate; /* 背景アニメーション */
         }
-        #tooltip ul { list-style-type: none; padding: 0; margin: 0; }
-        #tooltip li { position: relative; padding-left: 1.5rem; margin-bottom: 0.5rem; }
-        #tooltip li:last-child { margin-bottom: 0; }
-        #tooltip li::before { content: '●'; position: absolute; left: 0; top: 0.2rem; font-size: 0.7rem; color: #93c5fd; }
-        #tooltip .source { font-size: 0.75rem; color: #cbd5e1; display: block; margin-top: 2px; text-align: right; }
 
+        /* 軸ラベルの縦書き */
+        .writing-mode-vertical-rl {
+            writing-mode: vertical-rl;
+            text-orientation: upright; /* 文字を正立させる */
+        }
+
+        /* ツールチップのアニメーション */
+        .group:hover .tooltip {
+            visibility: visible;
+            opacity: 1;
+            transform: translate(-50%, -10px); /* 少し上に移動するアニメーション */
+        }
+        .tooltip {
+            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+            z-index: 100; /* 最前面に表示 */
+        }
+
+        /* カスタムスクロールバー */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        /* アニメーションキーフレーム */
+        @keyframes backgroundShift {
+            0% {
+                transform: scale(1);
+                background-position: 0% 0%, 100% 0%, 0% 100%, 100% 100%, 50% 50%;
+            }
+            100% {
+                transform: scale(1.1);
+                background-position: 10% 5%, 90% 5%, 5% 95%, 95% 90%, 45% 55%;
+            }
+        }
+        @keyframes fade-in-down {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fade-in-up {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fade-in {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slide-in-left {
+            from { opacity: 0; transform: translateX(-50px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes slide-in-right {
+            from { opacity: 0; transform: translateX(50px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes slide-in-top {
+            from { opacity: 0; transform: translateY(-50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes slide-in-bottom {
+            from { opacity: 0; transform: translateY(50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes pop-in {
+            0% { opacity: 0; transform: scale(0.8); }
+            80% { opacity: 1; transform: scale(1.05); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        @keyframes pulse-light {
+            0% { filter: brightness(1); }
+            50% { filter: brightness(1.2); }
+            100% { filter: brightness(1); }
+        }
+
+        /* アニメーションユーティリティクラス */
+        .animate-fade-in-down { animation: fade-in-down 0.8s ease-out forwards; }
+        .animate-fade-in-up { animation: fade-in-up 0.8s ease-out 0.2s forwards; opacity: 0; }
+        .animate-fade-in { animation: fade-in 1s ease-out 0.5s forwards; opacity: 0; }
+        .animate-fade-in-delay { animation: fade-in 1s ease-out 0.8s forwards; opacity: 0; }
+        .animate-slide-in-left { animation: slide-in-left 0.8s ease-out 1s forwards; opacity: 0; }
+        .animate-slide-in-right { animation: slide-in-right 0.8s ease-out 1.1s forwards; opacity: 0; }
+        .animate-slide-in-top { animation: slide-in-top 0.8s ease-out 1.2s forwards; opacity: 0; }
+        .animate-slide-in-bottom { animation: slide-in-bottom 0.8s ease-out 1.3s forwards; opacity: 0; }
+        .animate-pop-in { animation: pop-in 0.6s cubic-bezier(0.68, -0.55, 0.27, 1.55) forwards; opacity: 0; }
+        .animate-pulse-light { animation: pulse-light 3s infinite ease-in-out; }
+
+        /* 軸線の光る効果 */
+        .shadow-glow {
+            box-shadow: 0 0 15px rgba(168, 85, 247, 0.7); /* purple-500 */
+        }
     </style>
 </head>
-<body>
+<body class="antialiased text-gray-200 relative overflow-x-hidden">
 
-    <!-- ツールチップ用の要素 -->
-    <div id="tooltip"></div>
+    <!-- 1. タイトルセクション -->
+    <section class="relative py-16 md:py-24 z-10">
+        <div class="container mx-auto px-4 text-center">
+            <h1 class="text-4xl md:text-6xl font-bold mb-4 text-white drop-shadow-lg animate-fade-in-down">
+                人の成長戦略会議 #2
+            </h1>
+            <p class="text-xl md:text-2xl opacity-80 text-gray-300 drop-shadow animate-fade-in-up">
+                全社横断 課題クラスターマップ (2025年度)
+            </p>
+        </div>
+        <!-- 装飾 (光る線) -->
+        <div class="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-purple-500 to-transparent animate-pulse-light"></div>
+    </section>
 
-    <div class="page-container">
+    <!-- 2. 4象限バブルチャートセクション -->
+    <section class="container mx-auto px-4 py-16 relative z-10">
+        <h2 class="text-3xl font-bold text-center mb-16 text-white drop-shadow-md animate-fade-in">
+            4象限 課題クラスターマップ
+        </h2>
 
-        <!-- セクション 1: タイトル -->
-        <div class="slide-content" style="background-color: #0d47a1; color: white; text-align: center;">
-            <h1 class="text-5xl font-bold mb-4">人の成長戦略会議 議事録分析</h1>
-            <h2 class="text-3xl">4象限による課題の分類と可視化</h2>
-            <p class="mt-8 text-lg text-blue-100">（議事録まとめ資料に基づく）</p>
+        <!-- PC用コンテナ -->
+        <div class="hidden md:block max-w-7xl mx-auto relative p-8 bg-black bg-opacity-30 backdrop-blur-sm rounded-3xl shadow-2xl border border-gray-700/50 animate-fade-in-delay">
+            
+            <!-- 軸ラベル -->
+            <div class="absolute top-0 left-1/2 -translate-x-1/2 -mt-12 text-xl font-bold text-gray-400 whitespace-nowrap animate-slide-in-top">マネジメント層の課題</div>
+            <div class="absolute bottom-0 left-1/2 -translate-x-1/2 -mb-12 text-xl font-bold text-gray-400 whitespace-nowrap animate-slide-in-bottom">現場層の課題</div>
+            <div class="absolute top-1/2 left-0 -translate-y-1/2 -ml-16 text-xl font-bold text-gray-400 writing-mode-vertical-rl rotate-180 whitespace-nowrap animate-slide-in-left">メンタル・士気</div>
+            <div class="absolute top-1/2 right-0 -translate-y-1/2 -mr-16 text-xl font-bold text-gray-400 writing-mode-vertical-rl whitespace-nowrap animate-slide-in-right">スキル・成長</div>
+            
+            <!-- 軸線 (光る) -->
+            <div class="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-0.5 bg-gradient-to-b from-transparent via-purple-500 to-transparent shadow-glow z-0"></div>
+            <div class="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-0.5 bg-gradient-to-r from-transparent via-purple-500 to-transparent shadow-glow z-0"></div>
+
+            <!-- 4象限グリッド (overflow-hidden を削除) -->
+            <div class="relative grid grid-cols-2 grid-rows-2 rounded-2xl z-10 border border-gray-700/30">
+                
+                <!-- 象限③ (左上) -->
+                <div id="quadrant-3" class="bg-gradient-to-br from-[#1A203F] to-[#0A102F] p-6 min-h-[400px] flex flex-wrap gap-6 items-center justify-center content-center border-r border-b border-gray-700/30">
+                    <!-- JSでバブルを挿入 -->
+                </div>
+                
+                <!-- 象限① (右上) -->
+                <div id="quadrant-1" class="bg-gradient-to-bl from-[#1A3F20] to-[#0A2F10] p-6 min-h-[400px] flex flex-wrap gap-6 items-center justify-center content-center border-l border-b border-gray-700/30">
+                    <!-- JSでバブルを挿入 -->
+                </div>
+
+                <!-- 象限④ (左下) -->
+                <div id="quadrant-4" class="bg-gradient-to-tr from-[#3F1A20] to-[#2F0A10] p-6 min-h-[400px] flex flex-wrap gap-6 items-center justify-center content-center border-r border-t border-gray-700/30">
+                    <!-- JSでバブルを挿入 -->
+                </div>
+                
+                <!-- 象限② (右下) -->
+                <div id="quadrant-2" class="bg-gradient-to-tl from-[#3F3A1A] to-[#2F2A0A] p-6 min-h-[400px] flex flex-wrap gap-6 items-center justify-center content-center border-l border-t border-gray-700/30">
+                    <!-- JSでバブルを挿入 -->
+                </div>
+            </div>
         </div>
 
-        <!-- セクション 2: 4象限インタラクティブマップ -->
-        <div class="slide-content slide-graph"> 
-            <h1 class="text-2xl font-bold mb-2 text-gray-800 text-center">4象限 課題クラスターマップ</h1>
-            <p class="text-center text-gray-600 text-sm mb-3">（バブルのサイズは全体（55件）に占める割合を示します）</p>
-            <div class="relative"> <!-- このdivがグラフ領域 -->
-                <div class="quadrant-grid">
-                    <!-- Axes Labels -->
-                    <div class="axis-label axis-y-top">マネジメント層の課題</div>
-                    <div class="axis-label axis-y-bottom">現場層の課題</div>
-                    <div class="axis-label axis-x-left">メンタル・士気・関係性</div>
-                    <div class="axis-label axis-x-right">スキル・成長・育成</div>
+        <!-- スマホ用コンテナ -->
+        <div class="md:hidden space-y-8 animate-fade-in-delay">
+            <!-- 象限③ -->
+            <div class="p-4 bg-black bg-opacity-30 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-700/50">
+                <h3 class="font-bold text-lg text-center mb-4 p-2 bg-gradient-to-r from-blue-700 to-blue-900 text-white rounded-lg shadow-md animate-pulse-light">③ マネ×メンタル</h3>
+                <div id="quadrant-3-mobile" class="bg-gradient-to-br from-[#1A203F] to-[#0A102F] p-4 min-h-[250px] flex flex-wrap gap-4 items-center justify-center content-center rounded-lg border border-gray-700/30"></div>
+            </div>
+            <!-- 象限① -->
+            <div class="p-4 bg-black bg-opacity-30 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-700/50">
+                <h3 class="font-bold text-lg text-center mb-4 p-2 bg-gradient-to-r from-green-700 to-green-900 text-white rounded-lg shadow-md animate-pulse-light">① マネ×スキル</h3>
+                <div id="quadrant-1-mobile" class="bg-gradient-to-bl from-[#1A3F20] to-[#0A2F10] p-4 min-h-[250px] flex flex-wrap gap-4 items-center justify-center content-center rounded-lg border border-gray-700/30"></div>
+            </div>
+            <!-- 象限④ -->
+            <div class="p-4 bg-black bg-opacity-30 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-700/50">
+                <h3 class="font-bold text-lg text-center mb-4 p-2 bg-gradient-to-r from-red-700 to-red-900 text-white rounded-lg shadow-md animate-pulse-light">④ 現場×メンタル</h3>
+                <div id="quadrant-4-mobile" class="bg-gradient-to-tr from-[#3F1A20] to-[#2F0A10] p-4 min-h-[250px] flex flex-wrap gap-4 items-center justify-center content-center rounded-lg border border-gray-700/30"></div>
+            </div>
+            <!-- 象限② -->
+            <div class="p-4 bg-black bg-opacity-30 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-700/50">
+                <h3 class="font-bold text-lg text-center mb-4 p-2 bg-gradient-to-r from-yellow-700 to-yellow-900 text-white rounded-lg shadow-md animate-pulse-light">② 現場×スキル</h3>
+                <div id="quadrant-2-mobile" class="bg-gradient-to-tl from-[#3F3A1A] to-[#2F2A0A] p-4 min-h-[250px] flex flex-wrap gap-4 items-center justify-center content-center rounded-lg border border-gray-700/30"></div>
+            </div>
+        </div>
+    </section>
 
-                    <!-- 象限③: マネ×メンタル -->
-                    <div class="quadrant quadrant-3">
-                        <h2 class="quadrant-title text-blue-800">象限③ マネ×メンタル</h2>
-                        <div class="quadrant-clusters">
-                            <div class="cluster-bubble q3-bubble" data-percentage="7.3" data-voices="今の状況だと、部署長のメンタリティが心配。 (12局 根岸局長)|部署長の横連携、コミュニティが減ったと思う (孤立化が進んでいる)。 (12局 根岸局長)|（部署長が）マネジャーではなく、いちディレクターになっている。 (12局 永林補佐)|管理職が背負っている職務が大きすぎる、そのため管理職になりたいと考える人が減っている。 (3局 大村さん)">
-                                <span class="cluster-name">管理職の<br>負担・孤立</span>
-                                <span class="cluster-percentage">7.3%</span>
-                            </div>
-                            <div class="cluster-bubble q3-bubble" data-percentage="7.3" data-voices="一番気になったのは心理的安全性と成長のための負荷。出版はここがポイント (出版局 鏡原局長)|非常に「マッチョ」な部門。マッチョな人間と、そうでない人間とのギャップはどうしても生まれる。 (3局 御園さん)|心理的安全性について、局席と現場との意識の差については非常に関心がある。 (3局 内海さん)|一体感や teamwork は低い、という点は気になる。 (3局 荒川さん)">
-                                <span class="cluster-name">組織風土・<br>心理的安全性</span>
-                                <span class="cluster-percentage">7.3%</span>
-                            </div>
-                            <div class="cluster-bubble q3-bubble" data-percentage="5.5" data-voices="局席と現場のギャップ。あって当たり前だが、解消したほうがいい。 (3局 御園さん)|数字が苦しいときは上の気持ちが下がってくる。それが、下に伝播しないように気を付けたい。 (7K 山室局長)|結果がそぐわなくても、プロセスへの評価は必要だと思っている。 (4局 正隆局長)">
-                                <span class="cluster-name">現場との<br>ギャップ</span>
-                                <span class="cluster-percentage">5.5%</span>
-                            </div>
-                            <div class="cluster-bubble q3-bubble" data-percentage="5.5" data-voices="これ以上は局のレベルではないのではないか。例えば、得意先ポートフォリオを変えるとか... (10局 村住局長)|利益と成長が反することもあると思った。 (8局 宮本局長)|コンプライアンスの強化で作業が増えている。何か⾜されるなら何か引いてほしい。 (4局 渡邊GVM)">
-                                <span class="cluster-name">構造的課題<br>(業務・評価)</span>
-                                <span class="cluster-percentage">5.5%</span>
-                            </div>
-                        </div>
+    <!-- 3. 総括セクション -->
+    <section class="relative py-16 z-10">
+        <div class="container mx-auto px-4 max-w-4xl p-8 bg-black bg-opacity-30 backdrop-blur-sm rounded-3xl shadow-2xl border border-gray-700/50 animate-fade-in-delay">
+            <h2 class="text-3xl font-bold text-center mb-10 text-white drop-shadow-md animate-fade-in">
+                総括と傾向 (2025年度)
+            </h2>
+            <div class="space-y-8">
+                
+                <!-- 総括テキスト 1 -->
+                <div class="p-6 border-l-4 border-blue-500 bg-gradient-to-r from-blue-900/40 to-transparent rounded-r-lg shadow-lg hover:shadow-xl transition-shadow duration-300 animate-slide-in-left">
+                    <h3 class="font-bold text-xl text-blue-300 mb-3">
+                        全体の傾向
+                    </h3>
+                    <ul class="list-disc pl-5 space-y-3 text-gray-300">
+                        <li>
+                            多くの局で「キャリアビジョンの欠如」（象限②）が共通課題として挙げられている。特に6局、11局、15局で顕著であり、現場層の成長実感やモチベーションに影響している。
+                        </li>
+                        <li>
+                            「繁忙」と「メンタル不調者の個別ケア」（象限④）の必要性は、3局、9局、10局、14局など複数の局で指摘されており、高負荷な業務環境が継続していることが伺える。
+                        </li>
+                        <li>
+                            12局や3局では「管理職の負担・孤立」（象限③）が深刻な課題として認識されており、マネジメント層の疲弊が現場のケア不足に直結している構造が懸念される。
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- 総括テキスト 2 -->
+                <div class="p-6 border-l-4 border-green-500 bg-gradient-to-r from-green-900/40 to-transparent rounded-r-lg shadow-lg hover:shadow-xl transition-shadow duration-300 animate-slide-in-right">
+                    <h3 class="font-bold text-xl text-green-300 mb-3">
+                        課題の相関
+                    </h3>
+                    <ul class="list-disc pl-5 space-y-3 text-gray-300">
+                        <li>
+                            「リーダー・次世代育成」（象限①）の遅れが、現場層の「キャリアビジョンの欠如」（象限②）や「ロールモデルの不在」に直結している。
+                        </li>
+                        <li>
+                            「管理職の負担増大・孤立」（象限③）は、現場の「繁忙」や「メンタル不調」（象限④）への対応を困難にしており、負のスパイラルを生む危険性がある。
+                        </li>
+                        <li>
+                            2局や6局で挙がった「女性のキャリア不安」（象限④）は、象限②の「キャリアイメージの欠如」とも関連が深く、ジェンダーの観点を含めた育成パスの整備が求められる。
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="text-center py-8 text-gray-500 text-sm z-10 relative">
+        &copy; 2025 人材開発室
+    </footer>
+
+
+    <!-- C. JavaScriptによる動的生成 -->
+    <script>
+        // 1. データソース (ilovepdf_merged.pdf から抽出・再構成)
+        const clusterData = {
+            q1: [ // 象限① (右上: マネ×スキル)
+                {
+                    name: "リーダー・次世代育成",
+                    percentage: 10.0,
+                    color: "green",
+                    voices: [
+                        "一番の課題はリーダークラスの育成。 (2局 植木局長)",
+                        "次の部長・TLをどうやって育成していくのか (5局 金野さん)",
+                        "管理職になりたいと考える人が減ってしまっている (3局 大村さん)",
+                        "特にチームリーダークラス...どうしたらそれがマインドとして出てくるのか (出版局 鏡原局長)",
+                        "ユニットの流動性を高めた方がいい (8局 宮本局長)"
+                    ]
+                },
+                {
+                    name: "育成の質・方法論",
+                    percentage: 8.0,
+                    color: "green",
+                    voices: [
+                        "CSP異動者のトレーナーが中途...「博報堂のBDたるもの」というリードはできない (2局 植木局長)",
+                        "伸び悩んでいる⼦に対して、伸びる機会をどう作れるのか (4局 ⽔野補佐)",
+                        "アカウント的に重要な業務と、育成ポテンシャルの高い業務を整理 (5局 金野さん)",
+                        "業務ができそうな人の仮説を立てて業務付与に臨んでいくやり方 (5局 峯岸さん)"
+                    ]
+                }
+            ],
+            q2: [ // 象限② (右下: 現場×スキル)
+                {
+                    name: "キャリアビジョンの欠如",
+                    percentage: 15.0,
+                    color: "yellow",
+                    voices: [
+                        "キャリアに関する満足度が低かった (15局 中島GVM)",
+                        "文句は言うものの具体的に何がしたいかのビジョンがない社員 (15局 中野部長)",
+                        "キャリアイメージが無いメンバーが多いのはショッキング (6局 片桐補佐)",
+                        "憧れの先輩・魅力業務の不足感 (6局 片桐補佐)",
+                        "キャリアイメージといっても様々...それぞれの課題あり (6局 新保局長)",
+                        "テーマPFの次のキャリアデザインの相談は多い (テーマPF 後藤局長)"
+                    ]
+                },
+                {
+                    name: "成長機会・職務のミスマッチ",
+                    percentage: 9.0,
+                    color: "yellow",
+                    voices: [
+                        "伸び悩んでいる人に与える職務が11局は少ない (11局 市川局長)",
+                        "大きいチームではクライアントを背負うことができずに業務の一端をやるしかない (11局 市川局長)",
+                        "BP職として得られるスキルを言語化することで自信が持てる (15局 渡辺部長)",
+                        "2配:上司の変化...自分自身の相対的な位置づけがわからなくなってしまっている (3局 峯岸さん)"
+                    ]
+                }
+            ],
+            q3: [ // 象限③ (左上: マネ×メンタル)
+                {
+                    name: "管理職の負担・孤立",
+                    percentage: 12.0,
+                    color: "blue",
+                    voices: [
+                        "部署長のメンタリティが心配。 (12局 根岸局長)",
+                        "部署長の横連携、コミュニティが減った (孤立化が進んでいる) (12局 根岸局長)",
+                        "いまの部署長は...三重苦に苦しんでいて...いちディレクターになっている (12局 永林補佐)",
+                        "管理職が背負っている職務が大きすぎる (3局 大村さん)",
+                        "新部署長に対するサポート...外村部長、清水部長へのヒアリングを実施 (8局)"
+                    ]
+                }
+            ],
+            q4: [ // 象限④ (左下: 現場×メンタル)
+                {
+                    name: "メンタル不調・個別ケア",
+                    percentage: 13.0,
+                    color: "red",
+                    voices: [
+                        "スコアはいいが、会社に来れないひとなど複数いることは事実 (10局 村住局長)",
+                        "苦しんでいる人のケアをお願い致します。 (14局 嶋根補佐)",
+                        "ここをケアしないと改めて思うことができる (14局 馬殿局長)",
+                        "水口さんが気になる、どうすればいいのか (11局 市川局長)",
+                        "ティグリスに専任で1人でいっている東はケアしてほしい (14局 荒木補佐)",
+                        "岩月をヒアリングしてほしい (14局 渡辺補佐)"
+                    ]
+                },
+                {
+                    name: "繁忙・ワークロード",
+                    percentage: 10.0,
+                    color: "red",
+                    voices: [
+                        "下期は繁忙が予測される (2局 坂井GVM)",
+                        "13-2:さらに下期繁忙になっていく...ケアも大変 (13局 福島さん)",
+                        "スズキチームが繁忙の中...部長も含めてケア (9局 富川補佐)",
+                        "「忙しさ」の解消はなかなか難しい (4局 坂⼝補佐)",
+                        "コンプライアンスの強化で作業が増えている (4局 渡邊GVM)",
+                        "「ワークスタイル変革」のところは解決できてない課題 (10局 日野補佐)"
+                    ]
+                },
+                {
+                    name: "女性のキャリア不安",
+                    percentage: 7.0,
+                    color: "red",
+                    voices: [
+                        "気になっているのは女性のキャリア。 (2局 秋元補佐)",
+                        "視野が狭いゆえに、より悩んでいるケースもある (2局 秋元補佐)",
+                        "女性のキャリアビジョンへの悩みが増えている (15局 引田補佐)",
+                        "女性のキャリアプロジェクト、第2回ワークショップの実施 (9局)"
+                    ]
+                },
+                {
+                    name: "将来性・不公平感",
+                    percentage: 6.0,
+                    color: "red",
+                    voices: [
+                        "斜陽産業としての不安があるのは仕方ない (15局 引田補佐)",
+                        "心理的安全性面はタイトとなっている (3局 御園さん)",
+                        "WLBの話や他BD局の隣の芝生が青く見える話も多い (3局 大村さん)",
+                        "不公平感について...メッセージングで改善できる部分も (3局 荒川さん)"
+                    ]
+                }
+            ]
+        };
+
+        // 2. バブルの生成ロジック
+
+        // バブルのサイズを決定する (Tailwindクラス)
+        function getBubbleSize(percentage) {
+            if (percentage < 8) return 'w-24 h-24 md:w-32 md:h-32';
+            if (percentage < 11) return 'w-28 h-28 md:w-40 md:h-40';
+            if (percentage < 14) return 'w-32 h-32 md:w-48 md:h-48';
+            return 'w-36 h-36 md:w-56 md:h-56'; // 14以上
+        }
+
+        // バブルの色を決定する (Tailwindクラス)
+        function getBubbleColors(color) {
+            switch (color) {
+                case 'green':
+                    return 'bg-gradient-to-br from-green-600 to-green-800 text-green-100 border-2 border-green-400/50 hover:from-green-500 hover:to-green-700';
+                case 'yellow':
+                    return 'bg-gradient-to-br from-yellow-600 to-yellow-800 text-yellow-100 border-2 border-yellow-400/50 hover:from-yellow-500 hover:to-yellow-700';
+                case 'blue':
+                    return 'bg-gradient-to-br from-blue-600 to-blue-800 text-blue-100 border-2 border-blue-400/50 hover:from-blue-500 hover:to-blue-700';
+                case 'red':
+                    return 'bg-gradient-to-br from-red-600 to-red-800 text-red-100 border-2 border-red-400/50 hover:from-red-500 hover:to-red-700';
+                default:
+                    return 'bg-gradient-to-br from-gray-600 to-gray-800 text-gray-100 border-2 border-gray-400/50 hover:from-gray-500 hover:to-gray-700';
+            }
+        }
+
+        // 「生の声」から発言者情報をパースする
+        function parseVoice(voice) {
+            const match = voice.match(/^(.*?)(\(.*\))$/);
+            if (match) {
+                return { text: match[1].trim(), speaker: match[2] };
+            }
+            return { text: voice, speaker: null };
+        }
+
+        // バブルとツールチップを生成する関数
+        function createBubbleHTML(cluster) {
+            const sizeClass = getBubbleSize(cluster.percentage);
+            const colorClasses = getBubbleColors(cluster.color);
+
+            // ツールチップ内の「生の声」リストを生成
+            let voicesHTML = cluster.voices.map(voice => {
+                const { text, speaker } = parseVoice(voice);
+                let speakerHTML = speaker 
+                    ? `<span class="block text-gray-400 text-xs italic mt-1">${speaker}</span>` 
+                    : '';
+                return `<li class="break-words">${text}${speakerHTML}</li>`;
+            }).join('');
+
+            return `
+                <div class="relative group z-20 animate-pop-in">
+                    
+                    <!-- バブル本体 -->
+                    <div class="${sizeClass} ${colorClasses} rounded-full flex items-center justify-center text-center p-3 cursor-pointer shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-2xl ring-2 ring-transparent group-hover:ring-offset-2 group-hover:ring-offset-black group-hover:ring-white/50">
+                        <span class="text-xs md:text-sm font-bold leading-tight drop-shadow-md">
+                            ${cluster.name}
+                            <br>
+                            (${cluster.percentage.toFixed(1)}%)
+                        </span>
                     </div>
                     
-                    <!-- 象限①: マネ×スキル -->
-                    <div class="quadrant quadrant-1">
-                        <h2 class="quadrant-title text-green-800">象限① マネ×スキル</h2>
-                        <div class="quadrant-clusters">
-                            <div class="cluster-bubble q1-bubble" data-percentage="7.3" data-voices="一番の課題はリーダークラスの育成。 (2局 植木局長)|次の部長・TLをどうやって育成していくのか、という課題 (5局 金野さん)|価値創造が重要。...そういう人間を一人でも多くどう作っていけるか (2局 植木局長)|パブリックアセットビジネスを推進するためのプログラムは...サポートしてほしい。 (テーマ局 横田補佐)">
-                                <span class="cluster-name">リーダー・<br>次世代育成</span>
-                                <span class="cluster-percentage">7.3%</span>
-                            </div>
-                            <div class="cluster-bubble q1-bubble" data-percentage="7.3" data-voices="（中途トレーナーでは）「博報堂のBDたるもの」というリードはできない。 (2局 植木局長)|アカウント議論に比べ、人の育成に対してはなかなかできていない (5局 金野さん)|過保護気味になっている中で、筋肉質にするためにドライに選別していく必要がある。 (3局 御園さん)|ハイパフォーマー分析は、伸び悩んでるひとに対しての活用を検討 (4局 正隆局長)">
-                                <span class="cluster-name">育成の<br>質・方法論</span>
-                                <span class="cluster-percentage">7.3%</span>
-                            </div>
-                             <div class="cluster-bubble q1-bubble" data-percentage="3.6" data-voices="OJTの方針としても「チームで育てるOJT」を掲げている。 (出版局 秋山HRM)|1on1の育成が常態化してきている、本来は複数のメンバー、仕事の中で見ていけると良い (出版局 井上補佐)">
-                                <span class="cluster-name">OJTの<br>あり方</span>
-                                <span class="cluster-percentage">3.6%</span>
-                            </div>
-                            <div class="cluster-bubble q1-bubble" data-percentage="7.3" data-voices="局として「ここにいると成長できる」実感を設計・発信していく必要ある。 (6局 片桐補佐)|ユニットの流動性を高めた方がいいと思っている。 (8局 宮本局長)|伸び悩んでいる人に与える職務が11局は少ない (11局 市川局長)|非効率的ではあるが、業務ができそうな人の仮説を立てて業務付与に臨んでいくやり方。 (5局 峯岸さん)">
-                                <span class="cluster-name">育成環境・<br>アサイン</span>
-                                <span class="cluster-percentage">7.3%</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 象限④: 現場×メンタル -->
-                    <div class="quadrant quadrant-4">
-                        <h2 class="quadrant-title text-red-800">象限④ 現場×メンタル</h2>
-                        <div class="quadrant-clusters">
-                            <div class="cluster-bubble q4-bubble" data-percentage="7.3" data-voices="スコアはいいが、会社に来れないひとなど複数いることは事実。 (10局 村住局長)|苦しんでいる人のケアをお願い致します。 (14局 馬殿局長)|水口さんが気になる、どうすればいいのか (11局 市川局長)|局席だと本音を引き出しづらいのでHRMに期待したい。 (7局 山室局長)">
-                                <span class="cluster-name">メンタル不調・<br>個別ケア</span>
-                                <span class="cluster-percentage">7.3%</span>
-                            </div>
-                            <div class="cluster-bubble q4-bubble" data-percentage="7.3" data-voices="（繁忙で）その年はメンタルやられてしまう。部長も含めてケアしていかないといけない。 (9局 富川補佐)|13-2:さらに下期繁忙になっていくことや、...ケアも大変。 (13局 福島さん)|「忙しさ」の解消はなかなか難しい。 (4局 坂口補佐)|忙しくても充実している⼈たちをもう少し開いて解像度を上げていくとtipsがあると思う。 (4局 峯岸さん)">
-                                <span class="cluster-name">繁忙による<br>疲弊</span>
-                                <span class="cluster-percentage">7.3%</span>
-                            </div>
-                            <div class="cluster-bubble q4-bubble" data-percentage="7.3" data-voices="（新会社と）⼀緒にやることに不安不満を持つ⽅が局員にいる。 (テーマPF 後藤局長)|異動してくるベテランは...孤⽴してしまい、本⼈の強い気持ちでなんとか保っている。 (テーマPF 大石補佐)|（メディアPJが）本体がきついほど隣の芝生は青く見える、異動希望につながる可能性も (9局 富川補佐)|CSP異動者...自分の立ち位置が俯瞰して見れていないパターンが多い。 (9局 峯岸さん)">
-                                <span class="cluster-name">環境変化・<br>異動者の不安</span>
-                                <span class="cluster-percentage">7.3%</span>
-                            </div>
-                            <div class="cluster-bubble q4-bubble" data-percentage="5.5" data-voices="気になっているのは女性のキャリア。...視野が狭いゆえに、より悩んでいるケースもある (2局 秋元補佐)|女性は100%やれると思わないと引き受けないが、男性は3割できると思ったら... (2局 秋元補佐)|女性のキャリアビジョンへの悩みが増えている (15局 引田補佐)">
-                                <span class="cluster-name">女性の<br>キャリア不安</span>
-                                <span class="cluster-percentage">5.5%</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 象限②: 現場×スキル -->
-                    <div class="quadrant quadrant-2">
-                        <h2 class="quadrant-title text-yellow-800">象限② 現場×スキル</h2>
-                        <div class="quadrant-clusters">
-                            <div class="cluster-bubble q2-bubble" data-percentage="7.3" data-voices="キャリアイメージが無いメンバーが多いのはショッキング。 (6局 片桐補佐)|文句は言うものの具体的に何がしたいかのビジョンがない社員に、どう道筋を示せばよいか (15局 中野部長)|キャリアに関する満足度が低かった点が気になっている (2局 中島GVM)|キャリアで2局しか知らないメンバーも多い。 (2局 植木局長)">
-                                <span class="cluster-name">キャリアビジョン<br>の欠如</span>
-                                <span class="cluster-percentage">7.3%</span>
-                            </div>
-                            <div class="cluster-bubble q2-bubble" data-percentage="7.3" data-voices="現場からやっていこうとしないといけない。どうしたらそれがマインドとして出てくるのか (出版局 鏡原局長)|博報堂は現場がイキイキと自分の仕事を作っていくのがらしさ。 (出版局 鏡原局長)|（新人は）スキルないけど色々やりたいという感じ。 (9局 幸脇局長)|自らリーダーシップをはろうとする人...自分の領域を持とうとする人たち。 (11局 市川局長)">
-                                <span class="cluster-name">主体性・<br>成長マインド</span>
-                                <span class="cluster-percentage">7.3%</span>
-                            </div>
-                            <div class="cluster-bubble q2-bubble" data-percentage="1.8" data-voices="BDの優秀、優秀じゃないは半分は胆力...逃げないということが大事 (11局 市川局長)">
-                                <span class="cluster-name">胆力</span>
-                                <span class="cluster-percentage">1.8%</span>
-                            </div>
-                            <div class="cluster-bubble q2-bubble" data-percentage="5.5" data-voices="仕事の本質的な価値やスキルが見えにくくなっている (15局 中野部長)|BP職として得られるスキルを言語化することで自信が持てるメンバーもいるのでは (15局 渡辺部長)|テーマPFの次のキャリアデザインの相談は多い。 (テーマPF 後藤局長)">
-                                <span class="cluster-name">スキル言語化・<br>専門性</span>
-                                <span class="cluster-percentage">5.5%</span>
-                            </div>
-                        </div>
+                    <!-- ツールチップ (max-h-* と overflow-y-auto を削除) -->
+                    <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 w-72 md:w-96 bg-gray-900 bg-opacity-95 text-white text-xs rounded-lg shadow-xl p-4 z-50 invisible opacity-0 tooltip">
+                        <ul class="list-disc pl-4 space-y-2">
+                            ${voicesHTML}
+                        </ul>
+                        <!-- ツールチップの矢印 -->
+                        <div class="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-x-8 border-x-transparent border-t-8 border-t-gray-900/95"></div>
                     </div>
                 </div>
-            </div>
-        </div>
-
-        <!-- セクション 3: 総括 -->
-        <div class="slide-content">
-            <h1 class="text-3xl font-bold mb-6 text-gray-800">総括と傾向</h1>
-            <div class="space-y-6 text-lg">
-                <div>
-                    <h2 class="text-xl font-bold text-gray-700 mb-2">全体の傾向</h2>
-                    <ul class="list-disc pl-5 space-y-2">
-                        <li>「スキル・成長」と「メンタル・士気」の両面で、全方位的に課題が認識されている。</li>
-                        <li>特に「マネジメント層」自身の課題（負担、孤立、育成責任）が色濃く表れている。（象限①, ③）</li>
-                        <li>現場層に対しては、「キャリアの視座」といった育成課題（象限②）と、「個別のメンタル不調者」へのケア（象限④）が同時に発生している。</li>
-                    </ul>
-                </div>
-                <div>
-                    <h2 class="text-xl font-bold text-gray-700 mb-2">課題の相関</h2>
-                    <ul class="list-disc pl-5 space-y-2">
-                        <li>管理職の負担増・孤立（象限③）が、現場へのきめ細やかな育成（象限①）やケア（象限④）のリソースを圧迫している構造がうかがえる。</li>
-                        <li>現場のキャリアイメージの欠如（象限②）が、マネジメント層の「育て方」への悩み（象限①）を深めている。</li>
-                        <li>「心理的安全性」と「成長のための負荷」（出版局）のバランスが、全象限に共通する核心的なテーマとなっている。</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-
-    </div>
-
-    <script>
-        // --- バブルサイズとフォントサイズの動的設定 ---
-        document.addEventListener('DOMContentLoaded', () => {
-            const bubbles = document.querySelectorAll('.cluster-bubble');
-            const baseSize = 60; // バブルの最小直径 (px)
-            const sizeScaleFactor = 6; // %に応じたサイズの拡大係数
-            const baseFontSize = 10; // 最小フォントサイズ (px)
-            const fontScaleFactor = 0.25; // %に応じたフォントの拡大係数
-
-            bubbles.forEach(bubble => {
-                const percentage = parseFloat(bubble.getAttribute('data-percentage'));
-                if (isNaN(percentage)) return;
-
-                // サイズの計算
-                const size = baseSize + (percentage * sizeScaleFactor);
-                bubble.style.width = `${size}px`;
-                bubble.style.height = `${size}px`;
-
-                // フォントサイズの計算
-                const fontSize = baseFontSize + (percentage * fontScaleFactor);
-                bubble.style.fontSize = `${fontSize}px`;
-            });
-        });
-
-        // --- ツールチップロジック ---
-        const tooltip = document.getElementById('tooltip');
-        const bubbles = document.querySelectorAll('.cluster-bubble');
-
-        bubbles.forEach(bubble => {
-            bubble.addEventListener('mouseover', (event) => {
-                const targetBubble = event.currentTarget;
-                const voicesData = targetBubble.getAttribute('data-voices');
-                if (!voicesData) return;
-
-                const voices = voicesData.split('|');
-                let tooltipContent = '<ul>';
-                voices.forEach(voice => {
-                    const match = voice.match(/(.*)\s*\((.*)\)/);
-                    if (match) {
-                        tooltipContent += `<li>${match[1]}<span class="source">(${match[2]})</span></li>`;
-                    } else {
-                        tooltipContent += `<li>${voice}</li>`;
-                    }
-                });
-                tooltipContent += '</ul>';
-                
-                tooltip.innerHTML = tooltipContent;
-                tooltip.style.display = 'block';
-                updateTooltipPosition(event);
-            });
-
-            bubble.addEventListener('mousemove', updateTooltipPosition);
-
-            bubble.addEventListener('mouseout', () => {
-                tooltip.style.display = 'none';
-            });
-        });
-
-        function updateTooltipPosition(event) {
-            if (tooltip.style.display !== 'block') return;
-
-            let x = event.clientX + 15;
-            let y = event.clientY + 15;
-
-            // 画面端からはみ出ないように位置を調整
-            if (x + tooltip.offsetWidth > window.innerWidth - 20) {
-                x = event.clientX - tooltip.offsetWidth - 15;
-            }
-            if (y + tooltip.offsetHeight > window.innerHeight - 20) {
-                y = event.clientY - tooltip.offsetHeight - 15;
-            }
-            if (x < 10) x = 10;
-            if (y < 10) y = 10;
-
-            tooltip.style.left = `${x}px`;
-            tooltip.style.top = `${y}px`;
+            `;
         }
-        
+
+        // 3. 描画ロジック
+        document.addEventListener('DOMContentLoaded', () => {
+            const containers = {
+                'quadrant-1': document.getElementById('quadrant-1'),
+                'quadrant-2': document.getElementById('quadrant-2'),
+                'quadrant-3': document.getElementById('quadrant-3'),
+                'quadrant-4': document.getElementById('quadrant-4'),
+                'quadrant-1-mobile': document.getElementById('quadrant-1-mobile'),
+                'quadrant-2-mobile': document.getElementById('quadrant-2-mobile'),
+                'quadrant-3-mobile': document.getElementById('quadrant-3-mobile'),
+                'quadrant-4-mobile': document.getElementById('quadrant-4-mobile'),
+            };
+
+            let html_q1 = clusterData.q1.map(createBubbleHTML).join('');
+            let html_q2 = clusterData.q2.map(createBubbleHTML).join('');
+            let html_q3 = clusterData.q3.map(createBubbleHTML).join('');
+            let html_q4 = clusterData.q4.map(createBubbleHTML).join('');
+
+            // PC用コンテナに挿入
+            if(containers['quadrant-1']) containers['quadrant-1'].innerHTML = html_q1;
+            if(containers['quadrant-2']) containers['quadrant-2'].innerHTML = html_q2;
+            if(containers['quadrant-3']) containers['quadrant-3'].innerHTML = html_q3;
+            if(containers['quadrant-4']) containers['quadrant-4'].innerHTML = html_q4;
+
+            // モバイル用コンテナに挿入 (複製)
+            if(containers['quadrant-1-mobile']) containers['quadrant-1-mobile'].innerHTML = html_q1;
+            if(containers['quadrant-2-mobile']) containers['quadrant-2-mobile'].innerHTML = html_q2;
+            if(containers['quadrant-3-mobile']) containers['quadrant-3-mobile'].innerHTML = html_q3;
+            if(containers['quadrant-4-mobile']) containers['quadrant-4-mobile'].innerHTML = html_q4;
+        });
     </script>
+
 </body>
 </html>
-
