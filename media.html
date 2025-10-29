@@ -3,81 +3,133 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- タイトルも編集可能にするためIDを付与 -->
-    <title id="page-title">人の成長戦略会議 #2 課題マップ</title>
-    
+    <title id="page-title">人の成長戦略会議 D2 課題マップ</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Google Fonts Mplus 1p -->
+    <!-- Google Fonts (Mplus 1p) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Mplus+1p:wght@400;700&display=swap" rel="stylesheet">
-    
+    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+1p:wght@400;700&display=swap" rel="stylesheet">
+
     <style>
-        /* Mplus 1p フォントを適用 */
+        /* --- 基本フォント設定 --- */
         body {
-            font-family: 'Mplus 1p', sans-serif;
-            background-color: #000; /* 全体のデフォルト背景を黒に */
-            color: #e0e0e0; /* 基本の文字色を明るめに */
+            font-family: 'M PLUS 1p', sans-serif;
+            background-color: #000;
+            color: #E5E7EB; /* text-gray-200 */
         }
 
-        /* 背景グラデーション (body::before) */
+        /* --- オーロラ背景 --- */
         body::before {
-            content: "";
+            content: '';
             position: fixed;
             top: 0;
             left: 0;
+            right: 0;
+            bottom: 0;
             width: 100%;
-            height: 100%;
-            z-index: -1; /* コンテンツの下に配置 */
-            opacity: 0.9; /* 少し透明度を持たせて深みを出す */
-            /* 複数のグラデーションを重ね合わせ */
+            height: 100vh;
+            z-index: -1;
             background: 
                 radial-gradient(at 0% 0%, #3a0050 0%, transparent 70%),
                 radial-gradient(at 100% 0%, #0a012e 0%, transparent 70%),
                 radial-gradient(at 0% 100%, #8b0000 0%, transparent 70%),
                 radial-gradient(at 100% 100%, #0d015c 0%, transparent 70%),
                 radial-gradient(at 50% 50%, #4a0050 0%, transparent 70%);
-            background-blend-mode: screen; /* グラデーションの混合モード */
-            filter: blur(80px); /* ぼかし効果でなめらかに */
-            animation: backgroundShift 30s ease-in-out infinite alternate; /* 背景アニメーション */
+            background-blend-mode: screen;
+            filter: blur(80px);
+            animation: backgroundShift 30s ease-in-out infinite alternate;
+            will-change: transform, background-position;
         }
 
-        /* 軸ラベルの縦書き */
-        .writing-mode-vertical-rl {
-            writing-mode: vertical-rl;
-            text-orientation: upright; /* 文字を正立させる */
-        }
-
-        /* ツールチップのアニメーション */
-        .group:hover .tooltip {
-            visibility: visible;
-            opacity: 1;
-            transform: translate(-50%, -10px); /* 少し上に移動するアニメーション */
-        }
-        .tooltip {
-            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
-            z-index: 100; /* 最前面に表示 */
-        }
-
-        /* カスタムスクロールバー */
+        /* --- カスタムスクロールバー --- */
         ::-webkit-scrollbar {
             width: 8px;
+            height: 8px;
         }
         ::-webkit-scrollbar-track {
             background: rgba(255, 255, 255, 0.05);
             border-radius: 10px;
         }
         ::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.3);
+            background-color: rgba(168, 85, 247, 0.5); /* purple-500 */
             border-radius: 10px;
+            border: 2px solid transparent;
+            background-clip: content-box;
         }
         ::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 0.5);
+            background-color: rgba(168, 85, 247, 0.8);
         }
 
-        /* アニメーションキーフレーム */
+        /* --- ユーティリティクラス --- */
+        .shadow-glow {
+            box-shadow: 0 0 15px rgba(168, 85, 247, 0.7); /* purple-500 */
+        }
+        .writing-mode-vertical-rl {
+            writing-mode: vertical-rl;
+        }
+
+        /* --- ツールチップ アニメーション --- */
+        .group .tooltip {
+            transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
+            transform: translate(-50%, 0);
+            z-index: 100; /* ツールチップが最前面に */
+        }
+        .group:hover .tooltip {
+            transform: translate(-50%, -10px);
+        }
+
+        /* --- 編集機能スタイル --- */
+        [contenteditable="true"] {
+            outline: 2px dashed rgba(255, 255, 255, 0.5);
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            cursor: text;
+        }
+        #edit-controls {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            gap: 8px;
+        }
+        #edit-controls button {
+            background-color: rgba(255, 255, 255, 0.9);
+            color: #333;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            transition: all 0.2s ease;
+        }
+        #edit-controls button:hover {
+            background-color: #fff;
+            transform: translateY(-2px);
+        }
+        #edit-controls #save-button,
+        #edit-controls #cancel-button {
+            display: none;
+        }
+        #edit-controls #save-button {
+            background-color: #4CAF50; /* Green */
+            color: white;
+        }
+        #edit-controls #save-button:hover {
+            background-color: #45a049;
+        }
+        #edit-controls #reset-button {
+            background-color: #f44336; /* Red */
+            color: white;
+        }
+        #edit-controls #reset-button:hover {
+            background-color: #d32f2f;
+        }
+
+
+        /* --- アニメーションキーフレーム --- */
         @keyframes backgroundShift {
             0% {
                 transform: scale(1);
@@ -88,519 +140,605 @@
                 background-position: 10% 5%, 90% 5%, 5% 95%, 95% 90%, 45% 55%;
             }
         }
-        @keyframes fade-in-down {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes fade-in-up {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        
         @keyframes fade-in {
             from { opacity: 0; }
             to { opacity: 1; }
         }
+        .animate-fade-in { animation: fade-in 1s ease-out forwards; }
+        .animate-fade-in-delay { animation: fade-in 1s ease-out 0.8s forwards; opacity: 0; }
+
+        @keyframes fade-in-down {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in-down { animation: fade-in-down 0.8s ease-out forwards; }
+
+        @keyframes fade-in-up {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in-up { animation: fade-in-up 0.8s ease-out 0.2s forwards; opacity: 0; }
+        
         @keyframes slide-in-left {
             from { opacity: 0; transform: translateX(-50px); }
             to { opacity: 1; transform: translateX(0); }
         }
+        .animate-slide-in-left { animation: slide-in-left 1s ease-out 0.5s forwards; opacity: 0; }
+
         @keyframes slide-in-right {
             from { opacity: 0; transform: translateX(50px); }
             to { opacity: 1; transform: translateX(0); }
         }
+        .animate-slide-in-right { animation: slide-in-right 1s ease-out 0.5s forwards; opacity: 0; }
+
         @keyframes slide-in-top {
             from { opacity: 0; transform: translateY(-50px); }
             to { opacity: 1; transform: translateY(0); }
         }
+        .animate-slide-in-top { animation: slide-in-top 1s ease-out 0.5s forwards; opacity: 0; }
+
         @keyframes slide-in-bottom {
             from { opacity: 0; transform: translateY(50px); }
             to { opacity: 1; transform: translateY(0); }
         }
+        .animate-slide-in-bottom { animation: slide-in-bottom 1s ease-out 0.5s forwards; opacity: 0; }
+
         @keyframes pop-in {
-            0% { opacity: 0; transform: scale(0.8); }
-            80% { opacity: 1; transform: scale(1.05); }
+            0% { opacity: 0; transform: scale(0.5); }
             100% { opacity: 1; transform: scale(1); }
         }
+        .animate-pop-in {
+            opacity: 0;
+            animation: pop-in 0.6s cubic-bezier(0.68, -0.55, 0.27, 1.55) forwards;
+        }
+        
         @keyframes pulse-light {
-            0% { filter: brightness(1); }
-            50% { filter: brightness(1.2); }
-            100% { filter: brightness(1); }
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
         }
-
-        /* アニメーションユーティリティクラス */
-        .animate-fade-in-down { animation: fade-in-down 0.8s ease-out forwards; }
-        .animate-fade-in-up { animation: fade-in-up 0.8s ease-out 0.2s forwards; opacity: 0; }
-        .animate-fade-in { animation: fade-in 1s ease-out 0.5s forwards; opacity: 0; }
-        .animate-fade-in-delay { animation: fade-in 1s ease-out 0.8s forwards; opacity: 0; }
-        .animate-slide-in-left { animation: slide-in-left 0.8s ease-out 1s forwards; opacity: 0; }
-        .animate-slide-in-right { animation: slide-in-right 0.8s ease-out 1.1s forwards; opacity: 0; }
-        .animate-slide-in-top { animation: slide-in-top 0.8s ease-out 1.2s forwards; opacity: 0; }
-        .animate-slide-in-bottom { animation: slide-in-bottom 0.8s ease-out 1.3s forwards; opacity: 0; }
-        .animate-pop-in { animation: pop-in 0.6s cubic-bezier(0.68, -0.55, 0.27, 1.55) forwards; opacity: 0; }
-        .animate-pulse-light { animation: pulse-light 3s infinite ease-in-out; }
-
-        /* 軸線の光る効果 */
-        .shadow-glow {
-            box-shadow: 0 0 15px rgba(168, 85, 247, 0.7); /* purple-500 */
-        }
-        
-        /* 編集モード用のスタイル */
-        [contenteditable="true"] {
-            outline: 2px dashed rgba(255, 255, 255, 0.5);
-            outline-offset: 4px;
-            background-color: rgba(255, 255, 255, 0.1);
-            cursor: text;
-        }
-        
-        /* 編集ボタンのスタイル */
-        #edit-controls {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 1000;
-            display: flex;
-            gap: 12px;
-        }
-        #edit-controls button {
-            background-color: rgba(255, 255, 255, 0.9);
-            color: #000;
-            font-family: 'Mplus 1p', sans-serif;
-            font-weight: 700;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-            transition: all 0.2s ease-in-out;
-        }
-        #edit-controls button:hover {
-            background-color: #fff;
-            transform: translateY(-2px);
-        }
-        #edit-controls #save-button,
-        #edit-controls #cancel-button {
-            display: none; /* 初期状態では非表示 */
+        .animate-pulse-light {
+            animation: pulse-light 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
         }
     </style>
 </head>
-<body class="antialiased text-gray-200 relative overflow-x-hidden">
+<body class="overflow-x-hidden antialiased">
 
     <!-- 1. タイトルセクション -->
-    <section class="relative py-16 md:py-24 z-10">
-        <div class="container mx-auto px-4 text-center">
-            <!-- 編集可能要素にIDと data-editable を追加 / フォントサイズ拡大 -->
-            <h1 id="main-title" data-editable="true" class="text-5xl md:text-7xl font-bold mb-4 text-white drop-shadow-lg animate-fade-in-down">
-                人の成長戦略会議 #2
+    <section class="relative py-16 md:py-24 text-center overflow-hidden">
+        <div class="relative z-10">
+            <h1 id="main-title" data-editable="true" class="text-5xl md:text-7xl font-bold text-white drop-shadow-lg animate-fade-in-down">
+                人の成長戦略会議
             </h1>
-            <p id="sub-title" data-editable="true" class="text-2xl md:text-3xl opacity-80 text-gray-300 drop-shadow animate-fade-in-up">
-                全社横断 課題クラスターマップ
+            <p id="sub-title" data-editable="true" class="text-2xl md:text-3xl text-gray-300 opacity-80 mt-4 drop-shadow animate-fade-in-up">
+                D2 課題マップ
             </p>
         </div>
-        <!-- 装飾 (光る線) -->
-        <div class="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-purple-500 to-transparent animate-pulse-light"></div>
+        <!-- 装飾ライン -->
+        <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-1/3 md:w-1/4 h-1 bg-gradient-to-r from-purple-500 via-pink-500 to-purple-500 animate-pulse-light rounded-full"></div>
     </section>
 
     <!-- 2. 4象限バブルチャートセクション -->
-    <section class="container mx-auto px-4 py-16 relative z-10">
-        <!-- 見出し (フォントサイズ拡大) -->
-        <h2 id="quadrant-title" data-editable="true" class="text-4xl font-bold text-center mb-4 text-white drop-shadow-md animate-fade-in">
-            4象限 課題クラスターマップ
+    <section class="container mx-auto px-4 py-16 md:py-24">
+        <h2 id="quadrant-title" data-editable="true" class="text-4xl font-bold text-white text-center mb-4 md:mb-16 animate-fade-in">
+            4象限 課題マップ
         </h2>
-        <!-- 軸ラベルを H2 の直下に移動し、センタリングを合わせる (フォントサイズ拡大) -->
-        <div id="axis-y-top" data-editable="true" class="text-2xl font-bold text-gray-300 whitespace-nowrap animate-fade-in-up text-center mb-12" style="animation-delay: 0.2s;">マネジメント層の課題</div>
 
-        <!-- PC用コンテナ -->
-        <div class="hidden md:block max-w-7xl mx-auto relative p-8 bg-black bg-opacity-30 backdrop-blur-sm rounded-3xl shadow-2xl border border-gray-700/50 animate-fade-in-delay">
+        <!-- PC用コンテナ (md以上で表示) -->
+        <div class="hidden md:block relative bg-black bg-opacity-30 backdrop-blur-sm rounded-3xl shadow-2xl border border-gray-700/50 p-8 md:p-12 animate-fade-in-delay">
             
-            <!-- 軸ラベル (フォントサイズ拡大 / axis-y-top はH2の下に移動) -->
-            <div id="axis-y-bottom" data-editable="true" class="absolute bottom-0 left-1/2 -translate-x-1/2 -mb-12 text-2xl font-bold text-gray-400 whitespace-nowrap animate-slide-in-bottom">現場層の課題</div>
-            <div id="axis-x-left" data-editable="true" class="absolute top-1/2 left-0 -translate-y-1/2 -ml-16 text-2xl font-bold text-gray-400 writing-mode-vertical-rl rotate-180 whitespace-nowrap animate-slide-in-left">メンタル・士気</div>
-            <div id="axis-x-right" data-editable="true" class="absolute top-1/2 right-0 -translate-y-1/2 -mr-16 text-2xl font-bold text-gray-400 writing-mode-vertical-rl whitespace-nowrap animate-slide-in-right">スキル・成長</div>
-            
-            <!-- 軸線 (光る) -->
-            <div class="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-0.5 bg-gradient-to-b from-transparent via-purple-500 to-transparent shadow-glow z-0"></div>
-            <div class="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-0.5 bg-gradient-to-r from-transparent via-purple-500 to-transparent shadow-glow z-0"></div>
+            <!-- 軸ラベル (PC) -->
+            <div id="axis-y-top" data-editable="true" class="text-center mb-12 text-2xl font-bold text-gray-300 animate-slide-in-top">
+                マネジメント層の課題
+            </div>
+            <div id="axis-y-bottom" data-editable="true" class="absolute bottom-0 left-1/2 -translate-x-1/2 -mb-12 text-2xl font-bold text-gray-300 animate-slide-in-bottom">
+                現場層の課題
+            </div>
+            <div id="axis-x-left" data-editable="true" class="absolute top-1/2 left-0 -translate-y-1/2 -ml-16 text-2xl font-bold text-gray-300 writing-mode-vertical-rl rotate-180 animate-slide-in-left">
+                メンタル・士気
+            </div>
+            <div id="axis-x-right" data-editable="true" class="absolute top-1/2 right-0 -translate-y-1/2 -mr-16 text-2xl font-bold text-gray-300 writing-mode-vertical-rl animate-slide-in-right">
+                スキル・成長
+            </div>
 
-            <!-- 4象限グリッド (overflow-hidden を削除) -->
-            <div class="relative grid grid-cols-2 grid-rows-2 rounded-2xl z-10 border border-gray-700/30">
-                
+            <!-- 軸線 -->
+            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-1 bg-gradient-to-r from-purple-600/50 via-purple-400 to-purple-600/50 shadow-glow rounded-full z-0"></div>
+            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-full w-1 bg-gradient-to-b from-purple-600/50 via-purple-400 to-purple-600/50 shadow-glow rounded-full z-0"></div>
+
+            <!-- 4象限グリッド (PC) -->
+            <div class="relative grid grid-cols-2 grid-rows-2 rounded-2xl border border-gray-700/30 z-10">
                 <!-- 象限③ (左上) -->
-                <div id="quadrant-3" class="bg-gradient-to-br from-[#1A203F] to-[#0A102F] p-6 min-h-[400px] flex flex-wrap gap-6 items-center justify-center content-center border-r border-b border-gray-700/30">
+                <div id="quadrant-3" class="relative bg-gradient-to-br from-[#1A203F] to-[#0A102F] rounded-tl-2xl border-r border-b border-gray-700/30 flex flex-wrap gap-5 items-center justify-center content-center p-6 min-h-[400px]">
                     <!-- JSでバブルを挿入 -->
                 </div>
-                
                 <!-- 象限① (右上) -->
-                <div id="quadrant-1" class="bg-gradient-to-bl from-[#1A3F20] to-[#0A2F10] p-6 min-h-[400px] flex flex-wrap gap-6 items-center justify-center content-center border-l border-b border-gray-700/30">
+                <div id="quadrant-1" class="relative bg-gradient-to-bl from-[#1A3F20] to-[#0A2F10] rounded-tr-2xl border-l border-b border-gray-700/30 flex flex-wrap gap-5 items-center justify-center content-center p-6 min-h-[400px]">
                     <!-- JSでバブルを挿入 -->
                 </div>
-
                 <!-- 象限④ (左下) -->
-                <div id="quadrant-4" class="bg-gradient-to-tr from-[#3F1A20] to-[#2F0A10] p-6 min-h-[400px] flex flex-wrap gap-6 items-center justify-center content-center border-r border-t border-gray-700/30">
+                <div id="quadrant-4" class="relative bg-gradient-to-tr from-[#3F1A20] to-[#2F0A10] rounded-bl-2xl border-r border-t border-gray-700/30 flex flex-wrap gap-5 items-center justify-center content-center p-6 min-h-[400px]">
                     <!-- JSでバブルを挿入 -->
                 </div>
-                
                 <!-- 象限② (右下) -->
-                <div id="quadrant-2" class="bg-gradient-to-tl from-[#3F3A1A] to-[#2F2A0A] p-6 min-h-[400px] flex flex-wrap gap-6 items-center justify-center content-center border-l border-t border-gray-700/30">
+                <div id="quadrant-2" class="relative bg-gradient-to-tl from-[#3F3A1A] to-[#2F2A0A] rounded-br-2xl border-l border-t border-gray-700/30 flex flex-wrap gap-5 items-center justify-center content-center p-6 min-h-[400px]">
                     <!-- JSでバブルを挿入 -->
                 </div>
             </div>
         </div>
 
-        <!-- スマホ用コンテナ (フォントサイズ拡大) -->
+        <!-- スマホ用コンテナ (md未満で表示) -->
         <div class="md:hidden space-y-8 animate-fade-in-delay">
-            <!-- 象限③ -->
-            <div class="p-4 bg-black bg-opacity-30 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-700/50">
-                <h3 id="mobile-q3-title" data-editable="true" class="font-bold text-xl text-center mb-4 p-2 bg-gradient-to-r from-blue-700 to-blue-900 text-white rounded-lg shadow-md animate-pulse-light">③ マネ×メンタル</h3>
-                <div id="quadrant-3-mobile" class="bg-gradient-to-br from-[#1A203F] to-[#0A102F] p-4 min-h-[250px] flex flex-wrap gap-4 items-center justify-center content-center rounded-lg border border-gray-700/30"></div>
+            <!-- 象限③ (左上) -->
+            <div class="bg-black bg-opacity-30 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-700/50 overflow-hidden">
+                <h3 id="mobile-q3-title" data-editable="true" class="text-xl font-bold p-4 bg-gradient-to-r from-blue-700 to-blue-900 animate-pulse-light">
+                    ③ マネジメント × メンタル
+                </h3>
+                <div id="quadrant-3-mobile" class="flex flex-wrap gap-4 items-center justify-center content-center p-4 min-h-[250px] bg-gradient-to-br from-[#1A203F]/50 to-[#0A102F]/50">
+                    <!-- JSでバブルを挿入 -->
+                </div>
             </div>
-            <!-- 象限① -->
-            <div class="p-4 bg-black bg-opacity-30 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-700/50">
-                <h3 id="mobile-q1-title" data-editable="true" class="font-bold text-xl text-center mb-4 p-2 bg-gradient-to-r from-green-700 to-green-900 text-white rounded-lg shadow-md animate-pulse-light">① マネ×スキル</h3>
-                <div id="quadrant-1-mobile" class="bg-gradient-to-bl from-[#1A3F20] to-[#0A2F10] p-4 min-h-[250px] flex flex-wrap gap-4 items-center justify-center content-center rounded-lg border border-gray-700/30"></div>
+            <!-- 象限① (右上) -->
+            <div class="bg-black bg-opacity-30 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-700/50 overflow-hidden">
+                <h3 id="mobile-q1-title" data-editable="true" class="text-xl font-bold p-4 bg-gradient-to-r from-green-700 to-green-900 animate-pulse-light">
+                    ① マネジメント × スキル
+                </h3>
+                <div id="quadrant-1-mobile" class="flex flex-wrap gap-4 items-center justify-center content-center p-4 min-h-[250px] bg-gradient-to-bl from-[#1A3F20]/50 to-[#0A2F10]/50">
+                    <!-- JSでバブルを挿入 -->
+                </div>
             </div>
-            <!-- 象限④ -->
-            <div class="p-4 bg-black bg-opacity-30 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-700/50">
-                <h3 id="mobile-q4-title" data-editable="true" class="font-bold text-xl text-center mb-4 p-2 bg-gradient-to-r from-red-700 to-red-900 text-white rounded-lg shadow-md animate-pulse-light">④ 現場×メンタル</h3>
-                <div id="quadrant-4-mobile" class="bg-gradient-to-tr from-[#3F1A20] to-[#2F0A10] p-4 min-h-[250px] flex flex-wrap gap-4 items-center justify-center content-center rounded-lg border border-gray-700/30"></div>
+            <!-- 象限④ (左下) -->
+            <div class="bg-black bg-opacity-30 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-700/50 overflow-hidden">
+                <h3 id="mobile-q4-title" data-editable="true" class="text-xl font-bold p-4 bg-gradient-to-r from-red-700 to-red-900 animate-pulse-light">
+                    ④ 現場 × メンタル
+                </h3>
+                <div id="quadrant-4-mobile" class="flex flex-wrap gap-4 items-center justify-center content-center p-4 min-h-[250px] bg-gradient-to-tr from-[#3F1A20]/50 to-[#2F0A10]/50">
+                    <!-- JSでバブルを挿入 -->
+                </div>
             </div>
-            <!-- 象限② -->
-            <div class="p-4 bg-black bg-opacity-30 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-700/50">
-                <h3 id="mobile-q2-title" data-editable="true" class="font-bold text-xl text-center mb-4 p-2 bg-gradient-to-r from-yellow-700 to-yellow-900 text-white rounded-lg shadow-md animate-pulse-light">② 現場×スキル</h3>
-                <div id="quadrant-2-mobile" class="bg-gradient-to-tl from-[#3F3A1A] to-[#2F2A0A] p-4 min-h-[250px] flex flex-wrap gap-4 items-center justify-center content-center rounded-lg border border-gray-700/30"></div>
+            <!-- 象限② (右下) -->
+            <div class="bg-black bg-opacity-30 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-700/50 overflow-hidden">
+                <h3 id="mobile-q2-title" data-editable="true" class="text-xl font-bold p-4 bg-gradient-to-r from-yellow-700 to-yellow-900 animate-pulse-light">
+                    ② 現場 × スキル
+                </h3>
+                <div id="quadrant-2-mobile" class="flex flex-wrap gap-4 items-center justify-center content-center p-4 min-h-[250px] bg-gradient-to-tl from-[#3F3A1A]/50 to-[#2F2A0A]/50">
+                    <!-- JSでバブルを挿入 -->
+                </div>
             </div>
         </div>
     </section>
 
-    <!-- 3. 総括セクション (フォントサイズ拡大) -->
-    <section class="relative py-16 z-10">
-        <div class="container mx-auto px-4 max-w-4xl p-8 bg-black bg-opacity-30 backdrop-blur-sm rounded-3xl shadow-2xl border border-gray-700/50 animate-fade-in-delay">
-            <h2 id="summary-title" data-editable="true" class="text-4xl font-bold text-center mb-10 text-white drop-shadow-md animate-fade-in">
-                総括と傾向
-            </h2>
-            <div class="space-y-8">
+    <!-- 3. 総括セクション -->
+    <section class="relative py-16 md:py-24">
+        <div class="container mx-auto px-4">
+            <div class="relative bg-black bg-opacity-30 backdrop-blur-sm rounded-3xl shadow-2xl border border-gray-700/50 p-8 md:p-12 animate-fade-in-delay">
+                <h2 id="summary-title" data-editable="true" class="text-4xl font-bold text-white text-center mb-10 md:mb-12">
+                    総括とネクストステップ
+                </h2>
                 
-                <!-- 総括テキスト 1 -->
-                <div class="p-6 border-l-4 border-blue-500 bg-gradient-to-r from-blue-900/40 to-transparent rounded-r-lg shadow-lg hover:shadow-xl transition-shadow duration-300 animate-slide-in-left">
-                    <h3 id="summary-1-title" data-editable="true" class="font-bold text-2xl text-blue-300 mb-3">
-                        全体の傾向
-                    </h3>
-                    <ul id="summary-1-list" class="list-disc pl-5 space-y-3 text-gray-300 text-lg">
-                        <li id="summary-1-item-1" data-editable="true">
-                            最も広範かつ深刻な課題は、象限④（現場×メンタル）に集中している。特に「会社の将来性・HMP統合への不安」は、複数の局で共通して高い数値を示しており、現場の士気に直結する最大の懸念事項となっている。
-                        </li>
-                        <li id="summary-1-item-2" data-editable="true">
-                            次に大きな課題クラスターは象限②（現場×スキル）であり、特に若手やエキスパート職から「キャリアビジョン/成長実感の欠如」を訴える声が強い。ロールモデルの不在や、新体制下での貢献実感の得にくさが背景にある。
-                        </li>
-                    </ul>
-                </div>
+                <div class="grid md:grid-cols-3 gap-8 text-gray-300">
+                    
+                    <!-- 経営・組織課題 -->
+                    <div class="animate-slide-in-left" style="animation-delay: 0.8s;">
+                        <h3 id="summary-1-title" data-editable="true" class="text-2xl font-bold text-white mb-4">
+                            1. 経営・組織課題
+                        </h3>
+                        <div class="border-l-4 border-red-500 bg-gradient-to-r from-red-900/40 to-transparent p-4 rounded-r-lg">
+                            <ul id="summary-1-list" class="list-disc list-inside space-y-2 text-lg">
+                                <li id="summary-1-item-1" data-editable="true">HMP統合とPMIの遅れが、現場の「閉塞感」や「将来不安」の最大の要因となっている。</li>
+                                <li id="summary-1-item-2" data-editable="true">ミッションの曖昧化と、経営層の方針が現場に伝わっていないことへの不満が強い。</li>
+                                <li id="summary-1-item-3" data-editable="true">旧MPの体制・事業への無理解が、現場の負担と士気低下を招いている。</li>
+                            </ul>
+                        </div>
+                    </div>
 
-                <!-- 総括テキスト 2 -->
-                <div class="p-6 border-l-4 border-green-500 bg-gradient-to-r from-green-900/40 to-transparent rounded-r-lg shadow-lg hover:shadow-xl transition-shadow duration-300 animate-slide-in-right">
-                    <h3 id="summary-2-title" data-editable="true" class="font-bold text-2xl text-green-300 mb-3">
-                        課題の相関
-                    </h3>
-                    <ul id="summary-2-list" class="list-disc pl-5 space-y-3 text-gray-300 text-lg">
-                        <li id="summary-2-item-1" data-editable="true">
-                            象限③の「エキスパート職の処遇・制度」問題は、対象者の象限②「キャリアビジョン欠如」や象限④「将来不安」を直接引き起こす強い相関関係が見られる。
-                        </li>
-                        <li id="summary-2-item-2" data-editable="true">
-                            象限③の「部長陣のマネジメント課題」（例: 状況把握の不足）は、象限④の「部下の『窮々』とした状態」や「上司との関係悪化」に直結しており、マネジメントの質が現場のメンタルに与える影響は大きい。
-                        </li>
-                        <li id="summary-2-item-3" data-editable="true">
-                            象限①の戦略的な「異能・専門人材の採用」の必要性は、象限②の現場が感じる「新領域への対応」不安と連動しており、組織のスキル変革が急務であることを示唆している。
-                        </li>
-                    </ul>
+                    <!-- マネジメント課題 -->
+                    <div class="animate-slide-in-left" style="animation-delay: 1.0s;">
+                        <h3 id="summary-2-title" data-editable="true" class="text-2xl font-bold text-white mb-4">
+                            2. マネジメント課題
+                        </h3>
+                        <div class="border-l-4 border-blue-500 bg-gradient-to-r from-blue-900/40 to-transparent p-4 rounded-r-lg">
+                            <ul id="summary-2-list" class="list-disc list-inside space-y-2 text-lg">
+                                <li id="summary-2-item-1" data-editable="true">「エキスパート職」の処遇とモチベーション維持が、複数の局で深刻な課題となっている。</li>
+                                <li id="summary-2-item-2" data-editable="true">部長陣のマネジメント（部下の状況把握不足、負荷）に課題感が見られる。</li>
+                                <li id="summary-2-item-3" data-editable="true">シニア層のネクストキャリアとモチベーションをどう支援するかが、組織的な課題となっている。</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- 現場・育成課題 -->
+                    <div class="animate-slide-in-right" style="animation-delay: 1.2s;">
+                        <h3 id="summary-3-title" data-editable="true" class="text-2xl font-bold text-white mb-4">
+                            3. 現場・育成課題
+                        </h3>
+                        <div class="border-l-4 border-green-500 bg-gradient-to-r from-green-900/40 to-transparent p-4 rounded-r-lg">
+                            <ul id="summary-3-list" class="list-disc list-inside space-y-2 text-lg">
+                                <li id="summary-3-item-1" data-editable="true">若手・新人の「孤立感」と「キャリア不安」が顕著。出社率の低さがコミュニケーション不足に拍車。</li>
+                                <li id="summary-3-item-2" data-editable="true">「異能人材」の採用・育成・還流が、局の将来にとって最重要課題と認識されている。</li>
+                                <li id="summary-3-item-3" data-editable="true">H統合への対応力として、プロ意識を持った「リスキリング（自己学習）」と「社内外交」が急務。</li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- 4. フッターセクション (フォントサイズ拡大) -->
-    <footer id="footer-text" data-editable="true" class="text-center py-8 text-gray-500 text-base z-10 relative">
-        &copy; 2025 人材開発室
+    <!-- 4. フッターセクション -->
+    <footer class="text-center py-8 text-gray-500 text-base">
+        <p id="footer-text" data-editable="true">© 2025 人材開発室. All rights reserved.</p>
     </footer>
 
-    <!-- 編集コントロールボタン -->
+    <!-- 5. 編集コントロールUI -->
     <div id="edit-controls">
-        <button id="edit-button" title="ページを編集する">編集</button>
+        <button id="edit-button" title="テキストを編集する">編集</button>
         <button id="save-button" title="変更を保存する">保存</button>
-        <button id="cancel-button" title="編集をキャンセル">キャンセル</button>
-        <button id="reset-button" title="保存した内容をリセット">リセット</button>
+        <button id="cancel-button" title="編集をキャンセルする">キャンセル</button>
+        <button id="reset-button" title="保存内容をリセットする">リセット</button>
     </div>
 
 
-    <!-- C. JavaScriptによる動的生成 -->
     <script>
-        // 1. データソース (元のPDF: 統合AP局)
+        // <C. 新しいデータソース>
+        // PDF議事録から抽出・分類したデータ
         const clusterData = {
-            q1: [ // 象限① (右上: マネ×スキル)
-                {
-                    name: "異能・専門人材の採用/育成",
-                    percentage: 7.5,
-                    color: "green",
+            // 象限① (右上: マネジメント × スキル)
+            q1: [
+                { 
+                    name: "異能人材の採用・育成", 
+                    color: "green", 
+                    voices: [ 
+                        "AI・クラウドに精通してほしいという要望が来るが、若手だけでは対応できない (長瀬)",
+                        "異能人材をどう採用し、どう還流させていくかが局の最重要課題 (長瀬)",
+                        "明確な(異能人材の) 採用計画はない (浅田)",
+                        "異能人材がメディアとAIの新しいシナジーを生み出す動きは価値が高い (鈴木)"
+                    ] 
+                },
+                { 
+                    name: "H統合への対応力", 
+                    color: "green", 
                     voices: [
-                        "「異能人材」をどう採用していくかが課題 (P戦 長瀬)",
-                        "AI、クラウドに精通してほしいと要望が来るが、若手だけでは対応できない (P戦 長瀬)",
-                        "迅速にプロトタイプを供給する役割が求められる (P戦 長瀬)",
-                        "シニア人材の活用...ネクストキャリアを考えるシニア層 (G推進)",
-                        "若手育成に関する懸念 (G推進)"
+                        "「博報堂という変化」に対応できているかが社員の伸長を分けている (三四郎)",
+                        "ベースの知識が不足しており、Hクリとの協業で不利になる可能性 (コンクリ局)",
+                        "知識は「自分で学ぶ」必要があり、プロとして自己鍛錬が求められる (コンクリ局)"
+                    ] 
+                },
+                { 
+                    name: "職種横断の必要性", 
+                    color: "green", 
+                    voices: [ 
+                        "「やったことがないから分からない」をなくすため、もっと職種を回した方がいい (川上)"
+                    ] 
+                },
+                { 
+                    name: "管理職のスキル", 
+                    color: "green", 
+                    voices: [
+                        "部長が苦手な「人に任せること」に焦点を当てた動画コンテンツを公開 (人材開発室)",
+                        "中途採用で営業から来たが、かなり苦しんでいる様子 (松本) (梅本)"
                     ]
-                }
+                },
             ],
-            q2: [ // 象限② (右下: 現場×スキル)
+            // 象限② (右下: 現場 × スキル)
+            q2: [
+                { 
+                    name: "現場のキャリア不安", 
+                    color: "yellow", 
+                    voices: [ 
+                        "「自分の展望やキャリアイメージが持てるか」で悪化した人が特徴的に多い (AaaS局)",
+                        "若手が「キャリアイメージ」に×をつけている (飯塚)",
+                        "ロールモデルが見えにくいのではないか (長瀬)",
+                        "貢献の手触り感が掴みにくいのではないか (田代)"
+                    ] 
+                },
+                { 
+                    name: "フロントライン留学", 
+                    color: "yellow", 
+                    voices: [ 
+                        "三ッ巻、松元のフロントライン留学 (ONE業推へ) は、本人もびっくりしていた (飯塚)",
+                        "「AaaSでの経験が営業でこう役立った」を局会で共有し、若手の不安を払拭したい (吉本)"
+                    ] 
+                },
+                { 
+                    name: "リスキリングの必要性", 
+                    color: "yellow", 
+                    voices: [
+                        "実践は踏んでいるが、コンテンツビジネスやライツのベース知識が不足 (コンクリ局)",
+                        "「リスキリング」を促進する施策を人材開発にて検討 (ネクストアクション)"
+                    ]
+                },
                 {
-                    name: "キャリアビジョン/成長実感の欠如",
-                    percentage: 15.0,
+                    name: "研修・スキル可視化",
                     color: "yellow",
                     voices: [
-                        "「自分の展望やキャリアイメージが持てるか」が悪化した人が多い (AaaS 古閑)",
-                        "若手が「キャリアイメージ」に× (AaaS 飯塚)",
-                        "同期と比較して、自分のスキルに自信がない (AaaS 吉本)",
-                        "キャリアイメージ...「持てなくなっている」層 (新雑)",
-                        "エキスパートたちも「ここにいてどうなるんだっけ?」 (新雑 廣瀬)",
-                        "「個人の展望」「キャリアイメージが持てる」が...悪くなった (P戦)",
-                        "純粋に「自分の将来」について不安 (P戦 田代)",
-                        "ロールモデルが見えにくい (P戦 長瀬)",
-                        "貢献の手触り感が掴みにくい (P戦 田代)",
-                        "エキスパート職の社員...「この先どうしようか」と将来を憂慮 (TVR 木村)"
-                    ]
-                },
-                {
-                    name: "新領域・変化への対応",
-                    percentage: 9.0,
-                    color: "yellow",
-                    voices: [
-                        "「もっとフロントに立て」と言われ、経験もなく自信もない (AaaS 飯塚)",
-                        "宮下は...明確に「これがしたい」というタイプではない (AP 梅本)",
-                        "「博報堂という変化」に対応できているかが伸長を分けている (コンクリ)",
-                        "知識(コンテンツビジネス・ライツ)の欠如 (コンクリ)",
-                        "知識習得は自己責任...プロとして自己鍛錬(リスキリング)が求められる (コンクリ)",
-                        "「社内外交」が重要 (コンクリ)"
+                        "「課題設定のためのマーケティングフレームの基本」は若手に有用 (人材開発室)",
+                        "スキルサーベイを全職種共通の統一調査へ変更 (人材開発室)"
                     ]
                 }
             ],
-            q3: [ // 象限③ (左上: マネ×メンタル)
-                {
-                    name: "エキスパート職の処遇・制度",
-                    percentage: 10.5,
-                    color: "blue",
+            // 象限③ (左上: マネジメント × メンタル)
+            q3: [
+                { 
+                    name: "エキスパート職の処遇", 
+                    color: "blue", 
+                    voices: [ 
+                        "負荷が上がり続ける中、モチベーションをコントロールするのがしんどい (朝倉部長)",
+                        "エキスパートが報われる仕組みは？ (朝倉部長)",
+                        "「3年間ステイ」という制度が根本的な問題 (佐藤大)",
+                        "給与体系はがんばらなくても上がる仕組み。エキスパートから部長を登用すべき (藤川)",
+                        "スキルと自信がつき、市場価値が高まった社員ほど不満を抱き退職する (木村)"
+                    ] 
+                },
+                { 
+                    name: "部長陣のマネジメント", 
+                    color: "blue", 
+                    voices: [ 
+                        "森川部長は「窮々」メンバーが5人もいるのに、ケアが語られなかった (恒川)",
+                        "部下から「彼(森川部長)に話す気がない」と言っている人が多い (恒川)",
+                        "太田部長自身も悩んでおり、溜め込む性格のため解放させる場を作りたい (恒川)"
+                    ] 
+                },
+                { 
+                    name: "PMIへの懸念", 
+                    color: "blue", 
                     voices: [
-                        "エキスパート職の負荷が上がり続け、モチベーションコントロールがしんどい (新雑 朝倉部長 via 恒川)",
-                        "エキスパートが報われる仕組み (新雑)",
-                        "HMP統合でエキスパート職を今後どうするのか? (新雑 藤川)",
-                        "エキスパート職の給与問題...「3年間ステイ」制度が根本的問題 (TVR 佐藤大)",
-                        "制度が変わらなければ不満は解決できない (TVR 佐藤大)"
+                        "経営統合が「どっちつかず」で、しわ寄せが全て現場の負担と士気低下に (OA局)",
+                        "ミッションの責任の所在が不明確であることが士気低下の最大要因 (OA局)"
                     ]
                 },
                 {
-                    name: "部長陣のマネジメント課題",
-                    percentage: 9.0,
+                    name: "シニア・出向者の活用",
                     color: "blue",
                     voices: [
-                        "部長陣がどこまで(部下を)みえているか、に違和感 (新雑 恒川)",
-                        "森川部長の部は「窮々」メンバーが5人もいるのに...ケアが何も語られなかった (新雑 恒川)",
-                        "部下から「彼(森川部長)に話す気がない」 (新雑 恒川)",
-                        "石井部長の状況:マネジメントの難しさに直面 (OA)",
-                        "ミッションを背負うのか...経営層からの方針表明が強く求められています (OA)",
-                        "プロ意識の要求...乗ってこない社員は不適合と判断 (コンクリ)",
-                        "ラジオ部門は「個人商店」的文化...孤立を防ぐ (TVR 木村)"
+                        "ネクストキャリアを考えるシニア層に対する会社の支援のあり方 (グループメディア)",
+                        "55過ぎた人に経験を積ませるのは(若手育成とは)違う (林局長)"
                     ]
                 }
             ],
-            q4: [ // 象限④ (左下: 現場×メンタル)
-                {
-                    name: "会社の将来性・HMP統合への不安",
-                    percentage: 18.0,
-                    color: "red",
+            // 象限④ (左下: 現場 × メンタル)
+            q4: [
+                { 
+                    name: "会社の将来性への不安", 
+                    color: "red", 
+                    voices: [ 
+                        "「会社の現状や将来性に不安」が43% (統合AP)",
+                        "特に旧MPのメンバーで傾向が顕著 (統合AP)",
+                        "関連会社の役員が相次いで退職したことが大きい (藤本)",
+                        "競合(CA等)を見て「自社は大丈夫か」と憂慮 (田代)",
+                        "メディア事業の先行き不安に起因する閉塞感 (OA局)"
+                    ] 
+                },
+                { 
+                    name: "人事・処遇への不公平感", 
+                    color: "red", 
+                    voices: [ 
+                        "「人事や処遇が不公平」が前回0から5人ついた (AaaS局)",
+                        "超若手が(冷遇されてないのに)不公平と感じているのがわからない (飯塚)",
+                        "給与支給後に不満が出やすい傾向 (グループメディア)"
+                    ] 
+                },
+                { 
+                    name: "新人の孤立・疎外感", 
+                    color: "red", 
+                    voices: [ 
+                        "「もっと会社に来たい」「所属意識が持てない」 (新人)",
+                        "トレーナーに月2回しか会えない、飲み会が2回しかない (新人)",
+                        "出社しても先輩がいないと、かえって寂しさが増す (糸永)"
+                    ] 
+                },
+                { 
+                    name: "コミュニケーション不足", 
+                    color: "red", 
                     voices: [
-                        "「会社の現状や将来性に不安がある」と回答した社員が43% (AP)",
-                        "会社統合の影響や、局の数字実績が厳しい (AP)",
-                        "メディアフロントをどう実行するかが...決まっていない (AP 濱崎)",
-                        "「会社の現状や将来性に不安がある」...特に若手 (基盤開発)",
-                        "テクノロジーズの社長や役員が相次いで退職 (基盤開発 藤本)",
-                        "「会社の現状や将来性に不安」が40% (AaaS)",
-                        "「人事や処遇が不公平」が25% (AaaS)",
-                        "半数 (50%) がチェック (P戦)",
-                        "競合を見て「自社は大丈夫か」 (P戦 田代)",
-                        "旧MP社員の閉塞感...「メディア事業の先行き不安」 (OA)",
-                        "ミッションの曖昧化 (OA)",
-                        "PMIが円滑に進んでいない (OA)",
-                        "メディアユニットの社員が「会社の将来性」に不安を感じるのは、当然 (TVR 広瀬)"
+                        "「思ったままを話せる」が全社平均を下回る (コンクリ局)",
+                        "出社しない社員が多く、席にいないことが主因 (コンクリ局)",
+                        "フロアの席不足で偶発的なコミュニケーションが困難 (コンクリ局)"
                     ]
                 },
                 {
-                    name: "個別のメンタル不調・孤立",
-                    percentage: 15.0,
+                    name: "業務負荷・上司との関係",
                     color: "red",
                     voices: [
-                        "松本: ...かなり苦しんでいる様子。顔を見ればわかるし、元気がない。 (AP 川上)",
-                        "新人2名...「もっと会社に来たい」 「所属意識が持てない」 (基盤開発 恒川)",
-                        "出社しても先輩がいないと、かえって寂しさが増す (基盤開発 糸永)",
-                        "「忙しい」(突発的な仕事が多い) (新雑)",
-                        "「上司との関係」が相対的に悪い傾向 (新雑)",
-                        "「窮々」「悶々」ゾーンの人は...継続 (新雑)",
-                        "業務負荷に関する認識の違い (G推進)",
-                        "出向者の位置づけ...「出された」と感じている (G推進)",
-                        "藤井氏の適応課題:期待と現実のギャップ (OA)",
-                        "井上氏の再配置と懸念...不調時に近い状態 (OA)",
-                        "「思ったままを話せる」...全社平均を下回る (コンクリ)",
-                        "出社率の低さと要因 (コンクリ)",
-                        "3部は...「努力しても決まらない」状況がストレス (TVR 佐々木)"
+                        "テレアカのメンバーで「忙しい」「追われている」回答が増加 (統合AP)",
+                        "「上司との関係」が相対的に悪い傾向 (新聞雑誌局)",
+                        "業務の広がりがないことへの不満 (市川)"
                     ]
                 }
             ]
         };
 
-        // 2. バブルの生成ロジック
+        // <C. JavaScriptによる動的生成>
+        document.addEventListener('DOMContentLoaded', () => {
 
-        // バブルのサイズを決定する (Tailwindクラス)
-        function getBubbleSize(percentage) {
-            if (percentage < 8) return 'w-24 h-24 md:w-32 md:h-32';
-            if (percentage < 12) return 'w-28 h-28 md:w-40 md:h-40';
-            if (percentage < 16) return 'w-32 h-32 md:w-48 md:h-48';
-            return 'w-36 h-36 md:w-56 md:h-56'; // 16以上
-        }
+            // --- 2. パーセンテージの自動計算ロジック ---
+            let totalVoices = 0;
+            Object.values(clusterData).forEach(quadrant => {
+                quadrant.forEach(cluster => {
+                    totalVoices += cluster.voices.length;
+                });
+            });
 
-        // バブルの色を決定する (Tailwindクラス)
-        function getBubbleColors(color) {
-            switch (color) {
-                case 'green':
-                    return 'bg-gradient-to-br from-green-600 to-green-800 text-green-100 border-2 border-green-400/50 hover:from-green-500 hover:to-green-700';
-                case 'yellow':
-                    return 'bg-gradient-to-br from-yellow-600 to-yellow-800 text-yellow-100 border-2 border-yellow-400/50 hover:from-yellow-500 hover:to-yellow-700';
-                case 'blue':
-                    return 'bg-gradient-to-br from-blue-600 to-blue-800 text-blue-100 border-2 border-blue-400/50 hover:from-blue-500 hover:to-blue-700';
-                case 'red':
-                    return 'bg-gradient-to-br from-red-600 to-red-800 text-red-100 border-2 border-red-400/50 hover:from-red-500 hover:to-red-700';
-                default:
-                    return 'bg-gradient-to-br from-gray-600 to-gray-800 text-gray-100 border-2 border-gray-400/50 hover:from-gray-500 hover:to-gray-700';
+            if (totalVoices > 0) {
+                Object.values(clusterData).forEach(quadrant => {
+                    quadrant.forEach(cluster => {
+                        cluster.percentage = (cluster.voices.length / totalVoices) * 100;
+                    });
+                });
+            } else {
+                // 0除算を避ける
+                Object.values(clusterData).forEach(quadrant => {
+                    quadrant.forEach(cluster => {
+                        cluster.percentage = 0;
+                    });
+                });
             }
-        }
 
-        // 「生の声」から発言者情報をパースする
-        function parseVoice(voice) {
-            const match = voice.match(/^(.*?)(\(.*\))$/);
-            if (match) {
-                return { text: match[1].trim(), speaker: match[2] };
+
+            // --- 3. バブルの生成 ---
+
+            // パーセンテージに応じてサイズを決定
+            function getBubbleSize(percentage) {
+                if (percentage >= 15) return 'w-48 h-48 md:w-56 md:h-56'; // 特大
+                if (percentage >= 10) return 'w-40 h-40 md:w-48 md:h-48'; // 大
+                if (percentage >= 5) return 'w-32 h-32 md:w-40 md:h-40'; // 中
+                if (percentage >= 2) return 'w-24 h-24 md:w-32 md:h-32'; // 小
+                return 'w-20 h-20 md:w-24 md:h-24'; // 極小
             }
-            return { text: voice, speaker: null };
-        }
 
-        // バブルとツールチップを生成する関数
-        function createBubbleHTML(cluster) {
-            // ★ 修正: sizeClass と colorClasses をここで呼び出す
-            const sizeClass = getBubbleSize(cluster.percentage);
-            const colorClasses = getBubbleColors(cluster.color);
+            // 色に応じてグラデーションとボーダーを決定
+            function getBubbleColors(color) {
+                switch (color) {
+                    case 'green':
+                        return 'bg-gradient-to-br from-green-600 to-green-800 border-green-400';
+                    case 'yellow':
+                        return 'bg-gradient-to-br from-yellow-600 to-yellow-800 border-yellow-400';
+                    case 'blue':
+                        return 'bg-gradient-to-br from-blue-600 to-blue-800 border-blue-400';
+                    case 'red':
+                        return 'bg-gradient-to-br from-red-600 to-red-800 border-red-400';
+                    default:
+                        return 'bg-gradient-to-br from-gray-600 to-gray-800 border-gray-400';
+                }
+            }
 
-            // ツールチップ内の「生の声」リストを生成
-            let voicesHTML = cluster.voices.map(voice => {
-                const { text, speaker } = parseVoice(voice);
-                let speakerHTML = speaker 
-                    ? `<span class="block text-gray-400 text-xs italic mt-1">${speaker}</span>` 
-                    : '';
-                return `<li class="break-words">${text}${speakerHTML}</li>`;
-            }).join('');
+            // (発言者) の部分をパースしてスタイルを適用
+            function parseVoice(voice) {
+                // (発言者) または (局名) または (役職) などを検出
+                const regex = /(.*?)(\s?\(.*?\))$/;
+                const match = voice.match(regex);
+                if (match) {
+                    // match[1] = 発言内容, match[2] = (発言者)
+                    return `${match[1]}<span class="text-gray-400 text-xs block mt-1">${match[2]}</span>`;
+                }
+                return voice;
+            }
 
-            return `
-                <div class="relative group z-20 animate-pop-in">
-                    
-                    <!-- バブル本体 (フォントサイズ拡大) -->
-                    <div class="${sizeClass} ${colorClasses} rounded-full flex items-center justify-center text-center p-3 cursor-pointer shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-2xl ring-2 ring-transparent group-hover:ring-offset-2 group-hover:ring-offset-black group-hover:ring-white/50">
-                        <span class="text-sm md:text-base font-bold leading-tight drop-shadow-md">
+            // バブルのHTMLを生成
+            function createBubbleHTML(cluster, index) {
+                const sizeClass = getBubbleSize(cluster.percentage);
+                const colorClasses = getBubbleColors(cluster.color);
+                
+                // アニメーション遅延を計算
+                const delay = (index * 150) + 'ms';
+
+                // ツールチップ内の「生の声」リストを生成
+                const voicesHTML = cluster.voices.map(voice => 
+                    `<li class="border-b border-gray-700/50 py-2 last:border-b-0">
+                        ${parseVoice(voice)}
+                    </li>`
+                ).join('');
+
+                return `
+                    <div class="group relative ${sizeClass} ${colorClasses}
+                                rounded-full border-2 shadow-xl cursor-pointer
+                                flex items-center justify-center text-center p-2
+                                text-white font-bold transform transition-all duration-300 
+                                hover:scale-110 hover:shadow-2xl hover:z-20
+                                group-hover:ring-4 group-hover:ring-offset-2 group-hover:ring-offset-black group-hover:ring-white/50
+                                animate-pop-in"
+                         style="animation-delay: ${delay};">
+                        
+                        <!-- バブル内のテキスト -->
+                        <span class="text-sm md:text-base leading-tight drop-shadow-md">
                             ${cluster.name}
                             <br>
                             (${cluster.percentage.toFixed(1)}%)
                         </span>
+
+                        <!-- ツールチップ -->
+                        <div class="tooltip absolute bottom-full left-1/2 mb-2
+                                    w-72 md:w-96 
+                                    bg-gray-900 bg-opacity-95 backdrop-blur-md 
+                                    border border-gray-700/50
+                                    text-white text-sm font-normal text-left
+                                    rounded-lg shadow-xl p-4
+                                    invisible opacity-0 group-hover:visible group-hover:opacity-100">
+                            
+                            <h4 class="text-base font-bold mb-2 pb-2 border-b border-gray-700 ${colorClasses.replace('bg-gradient-to-br', 'text-transparent bg-clip-text')}">
+                                ${cluster.name}
+                            </h4>
+                            <p class="text-gray-400 mb-3 text-xs">関連する「生の声」:</p>
+                            <ul class="space-y-1 list-none p-0 m-0 max-h-64 overflow-y-auto">
+                                ${voicesHTML}
+                            </ul>
+                        </div>
                     </div>
-                    
-                    <!-- ツールチップ (max-h-* と overflow-y-auto を削除 / フォントサイズ拡大) -->
-                    <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 w-72 md:w-96 bg-gray-900 bg-opacity-95 text-white text-sm rounded-lg shadow-xl p-4 z-50 invisible opacity-0 tooltip">
-                        <ul class="list-disc pl-4 space-y-2">
-                            ${voicesHTML}
-                        </ul>
-                        <!-- ツールチップの矢印 -->
-                        <div class="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-x-8 border-x-transparent border-t-8 border-t-gray-900/95"></div>
-                    </div>
-                </div>
-            `;
-        }
+                `;
+            }
 
-        // 3. 描画ロジック (バブル生成)
-        document.addEventListener('DOMContentLoaded', () => {
-            const containers = {
-                'quadrant-1': document.getElementById('quadrant-1'),
-                'quadrant-2': document.getElementById('quadrant-2'),
-                'quadrant-3': document.getElementById('quadrant-3'),
-                'quadrant-4': document.getElementById('quadrant-4'),
-                'quadrant-1-mobile': document.getElementById('quadrant-1-mobile'),
-                'quadrant-2-mobile': document.getElementById('quadrant-2-mobile'),
-                'quadrant-3-mobile': document.getElementById('quadrant-3-mobile'),
-                'quadrant-4-mobile': document.getElementById('quadrant-4-mobile'),
-            };
+            // --- 4. 描画ロジック ---
+            const quadrants = [
+                { id: 'quadrant-1', data: clusterData.q1.sort((a, b) => b.percentage - a.percentage) }, // 右上
+                { id: 'quadrant-2', data: clusterData.q2.sort((a, b) => b.percentage - a.percentage) }, // 右下
+                { id: 'quadrant-3', data: clusterData.q3.sort((a, b) => b.percentage - a.percentage) }, // 左上
+                { id: 'quadrant-4', data: clusterData.q4.sort((a, b) => b.percentage - a.percentage) }, // 左下
+            ];
 
-            let html_q1 = clusterData.q1.map(createBubbleHTML).join('');
-            let html_q2 = clusterData.q2.map(createBubbleHTML).join('');
-            let html_q3 = clusterData.q3.map(createBubbleHTML).join('');
-            let html_q4 = clusterData.q4.map(createBubbleHTML).join('');
+            quadrants.forEach(q => {
+                const pcContainer = document.getElementById(q.id);
+                const mobileContainer = document.getElementById(`${q.id}-mobile`);
+                let htmlContent = '';
+                
+                q.data.forEach((cluster, index) => {
+                    htmlContent += createBubbleHTML(cluster, index);
+                });
 
-            // PC用コンテナに挿入
-            if(containers['quadrant-1']) containers['quadrant-1'].innerHTML = html_q1;
-            if(containers['quadrant-2']) containers['quadrant-2'].innerHTML = html_q2;
-            if(containers['quadrant-3']) containers['quadrant-3'].innerHTML = html_q3;
-            if(containers['quadrant-4']) containers['quadrant-4'].innerHTML = html_q4;
+                if (pcContainer) pcContainer.innerHTML = htmlContent;
+                if (mobileContainer) mobileContainer.innerHTML = htmlContent;
+            });
 
-            // モバイル用コンテナに挿入 (複製)
-            if(containers['quadrant-1-mobile']) containers['quadrant-1-mobile'].innerHTML = html_q1;
-            if(containers['quadrant-2-mobile']) containers['quadrant-2-mobile'].innerHTML = html_q2;
-            if(containers['quadrant-3-mobile']) containers['quadrant-3-mobile'].innerHTML = html_q3;
-            if(containers['quadrant-4-mobile']) containers['quadrant-4-mobile'].innerHTML = html_q4;
-        });
 
-        // 4. 編集機能とLocalStorageのロジック
-        document.addEventListener('DOMContentLoaded', () => {
+            // --- 5. 編集機能とLocalStorageのロジック ---
+            const storageKey = 'editableContent_growthMapD2';
+            const editableElements = document.querySelectorAll('[data-editable="true"]');
             const editButton = document.getElementById('edit-button');
             const saveButton = document.getElementById('save-button');
             const cancelButton = document.getElementById('cancel-button');
             const resetButton = document.getElementById('reset-button');
-            const editableElements = document.querySelectorAll('[data-editable="true"]');
-            
-            // ページのユニークなキー（このファイル固有）
-            const storageKey = 'editableContent_kadai_map_gradient'; // ★ 固有キーに変更
-            let originalContent = {}; // キャンセル用に元の内容を保持
+            let originalContent = {};
 
-            // 1. 読み込み: localStorageからデータをロードする
+            // localStorageからコンテンツを読み込む
             function loadContent() {
                 try {
                     const savedContent = localStorage.getItem(storageKey);
                     if (savedContent) {
                         const content = JSON.parse(savedContent);
-                        Object.keys(content).forEach(id => {
-                            const element = document.getElementById(id);
-                            if (element) {
-                                if (id === 'page-title') {
-                                    document.title = content[id];
+                        editableElements.forEach(el => {
+                            if (content[el.id]) {
+                                if (el.id === 'page-title') {
+                                    document.title = content[el.id];
                                 } else {
-                                    element.innerHTML = content[id];
+                                    el.innerHTML = content[el.id];
                                 }
                             }
                         });
+                        if (content['page-title']) {
+                            document.title = content['page-title'];
+                        }
                     }
-                } catch (e) {
-                    console.error("保存されたコンテンツの読み込みに失敗しました。", e);
-                    localStorage.removeItem(storageKey); // 壊れたデータを削除
+                } catch (error) {
+                    console.error("Failed to load content from localStorage:", error);
                 }
             }
 
-            // 2. 編集モード開始
+            // 編集モードを終了する（状態をリセット）
+            function endEditing() {
+                editableElements.forEach(el => {
+                    el.contentEditable = 'false';
+                    el.blur();
+                });
+                editButton.style.display = 'inline-block';
+                resetButton.style.display = 'inline-block';
+                saveButton.style.display = 'none';
+                cancelButton.style.display = 'none';
+            }
+
+            // 編集モードを開始する
             function startEditing() {
-                // キャンセル用に現在の内容を保存
-                originalContent = {};
+                originalContent = {}; // 元の内容を退避
                 editableElements.forEach(el => {
                     originalContent[el.id] = el.innerHTML;
-                    el.setAttribute('contenteditable', 'true');
+                    el.contentEditable = 'true';
                 });
-                
-                // ページタイトルも編集対象に含める（ただし表示は変えない）
                 originalContent['page-title'] = document.title;
                 
                 editButton.style.display = 'none';
@@ -609,88 +747,71 @@
                 cancelButton.style.display = 'inline-block';
             }
 
-            // 3. 保存
+            // 変更を保存する
             function saveContent() {
-                let contentToSave = {};
-                editableElements.forEach(el => {
-                    contentToSave[el.id] = el.innerHTML;
-                    el.setAttribute('contenteditable', 'false');
-                });
-                
-                // ページタイトルを個別に保存
-                const newTitle = prompt("新しいページタイトルを入力してください:", document.title);
-                if (newTitle !== null && newTitle.trim() !== "") {
-                    document.title = newTitle;
-                    contentToSave['page-title'] = newTitle;
-                } else if (newTitle === null) {
-                    // キャンセルされた場合は元のタイトルを保存
-                    contentToSave['page-title'] = document.title;
-                } else {
-                    // 空文字の場合は元のタイトルを保存
-                    contentToSave['page-title'] = document.title;
-                }
-
-
                 try {
-                    localStorage.setItem(storageKey, JSON.stringify(contentToSave));
-                    alert("保存しました。");
-                } catch (e) {
-                    console.error("コンテンツの保存に失敗しました。", e);
-                    alert("エラーが発生し、保存できませんでした。");
+                    // カスタムプロンプトでページタイトルを取得
+                    const newPageTitle = prompt("新しいページタイトルを入力してください:", document.title);
+                    if (newPageTitle !== null) { // キャンセルでなければ
+                        document.title = newPageTitle;
+                        
+                        const contentToSave = {};
+                        editableElements.forEach(el => {
+                            contentToSave[el.id] = el.innerHTML;
+                        });
+                        contentToSave['page-title'] = newPageTitle;
+
+                        localStorage.setItem(storageKey, JSON.stringify(contentToSave));
+                        endEditing();
+                    }
+                } catch (error) {
+                    console.error("Failed to save content to localStorage:", error);
+                    alert("保存に失敗しました。");
                 }
-                
-                endEditing();
             }
 
-            // 4. キャンセル
+            // 編集をキャンセルする
             function cancelEditing() {
+                // 退避した内容を復元
                 editableElements.forEach(el => {
                     if (originalContent[el.id]) {
-                        el.innerHTML = originalContent[el.id];
+                        if (el.id === 'page-title') {
+                             document.title = originalContent[el.id];
+                        } else {
+                            el.innerHTML = originalContent[el.id];
+                        }
                     }
-                    el.setAttribute('contenteditable', 'false');
                 });
-                
-                // ページタイトルを元に戻す
-                if (originalContent['page-title']) {
+                 if (originalContent['page-title']) {
                     document.title = originalContent['page-title'];
                 }
-                
                 endEditing();
             }
 
-            // 5. 編集モード終了（共通処理）
-            function endEditing() {
-                editableElements.forEach(el => {
-                    el.setAttribute('contenteditable', 'false');
-                });
-                
-                editButton.style.display = 'inline-block';
-                resetButton.style.display = 'inline-block';
-                saveButton.style.display = 'none';
-                cancelButton.style.display = 'none';
-            }
-            
-            // 6. リセット
+            // 保存内容をリセットする
             function resetContent() {
-                if (confirm("保存した内容をすべてリセットし、ページをリロードしますか？\n（元のHTMLの初期状態に戻ります）")) {
-                    localStorage.removeItem(storageKey);
-                    location.reload();
+                // カスタム確認ダイアログの代わりにconfirmを使用（デモ用）
+                // 本番環境ではカスタムモーダルに置き換えることを推奨
+                if (confirm("保存された編集内容をすべてリセットし、ページをリロードします。よろしいですか？")) {
+                    try {
+                        localStorage.removeItem(storageKey);
+                        location.reload();
+                    } catch (error) {
+                        console.error("Failed to reset content:", error);
+                        alert("リセットに失敗しました。");
+                    }
                 }
             }
 
-            // イベントリスナーの設定
+            // イベントリスナーを設定
             editButton.addEventListener('click', startEditing);
             saveButton.addEventListener('click', saveContent);
             cancelButton.addEventListener('click', cancelEditing);
             resetButton.addEventListener('click', resetContent);
 
-            // ページ読み込み時に保存された内容をロード
+            // 初期ロード
             loadContent();
         });
-
     </script>
-
 </body>
 </html>
-
