@@ -8,61 +8,41 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap');
         html, body {
-            height: 100%;
+            /* スクロールを許可 */
+            overflow-y: auto;
             margin: 0;
             padding: 0;
-            overflow: hidden; 
+            background-color: #f3f4f6;
         }
         body {
             font-family: 'Noto Sans JP', 'Inter', sans-serif;
-            background-color: #f3f4f6;
             display: flex;
-            justify-content: center;
-            align-items: center;
+            flex-direction: column; /* 垂直方向に並べる */
+            align-items: center; /* 中央揃え */
         }
-        .slide-container {
-            width: 95vw; 
-            height: 95vh;
+        .page-container {
+            width: 90vw; 
+            max-width: 1200px; /* 最大幅を設定 */
+            margin: 2.5vh auto; /* 上下にマージン */
             position: relative;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
-            overflow: hidden;
-            background: white;
-            display: flex; 
         }
-        .slide {
+        /* 各セクション（旧スライド）のスタイル */
+        .slide-content {
             width: 100%;
-            height: 100%;
-            position: absolute;
-            top: 0;
-            left: 0;
-            opacity: 0;
-            transition: opacity 0.4s ease-in-out;
             padding: 3vh 3vw; 
             box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-            visibility: hidden;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            margin-bottom: 4vh; /* セクション間のマージン */
         }
-        .slide.active {
-            opacity: 1;
-            visibility: visible;
-        }
-        .slide-footer {
-            position: absolute;
-            bottom: 20px;
-            right: 30px;
-            font-size: 0.85rem;
-            color: #6b7280;
-        }
+
         .quadrant-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             grid-template-rows: 1fr 1fr;
-            /* flex-grow: 1; を削除 */
-            /* width: 100%; を削除 */
-            height: 100%; /* ★ 親の高さにいっぱいに広がる */
-            width: 100%; /* ★ 親の幅にいっぱいに広がる */
+            width: 100%;
+            height: 80vh; /* グラフ領域の高さを確保 */
             gap: 12px;
             position: relative;
         }
@@ -114,7 +94,7 @@
         /* バブルチャート用コンテナ */
         .quadrant-clusters {
             flex-grow: 1;
-            overflow: hidden; /* スクロールバーを隠す */
+            overflow: hidden; 
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
@@ -137,16 +117,16 @@
             padding: 4px;
             text-align: center;
             line-height: 1.2;
-            word-break: keep-all; /* 日本語の変な改行を防ぐ */
+            word-break: keep-all; 
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
         
         .cluster-name {
-            font-size: 0.9em; /* 親のfont-sizeに連動 */
+            font-size: 0.9em; 
             font-weight: 700;
         }
         .cluster-percentage {
-            font-size: 0.8em; /* 親のfont-sizeに連動 */
+            font-size: 0.8em; 
             margin-top: 2px;
             opacity: 0.8;
         }
@@ -173,29 +153,10 @@
             z-index: 3;
             font-size: 0.9rem;
         }
-        /* ★ .flex-grow.relative のパディング領域に配置されるように変更 */
-        .axis-y-top { 
-            top: 0; /* ★ パディング上端 */
-            left: 50%; 
-            transform: translateX(-50%); 
-        }
-        .axis-y-bottom { 
-            bottom: 0; /* ★ パディング下端 */
-            left: 50%; 
-            transform: translateX(-50%); 
-        }
-        .axis-x-left { 
-            left: 0; /* ★ パディング左端 */
-            top: 50%; 
-            transform: translateY(-50%); 
-            white-space: nowrap; 
-        }
-        .axis-x-right { 
-            right: 0; /* ★ パディング右端 */
-            top: 50%; 
-            transform: translateY(-50%); 
-            white-space: nowrap; 
-        }
+        .axis-y-top { top: -10px; left: 50%; transform: translateX(-50%); }
+        .axis-y-bottom { bottom: -10px; left: 50%; transform: translateX(-50%); }
+        .axis-x-left { left: -14px; top: 50%; transform: translateY(-50%) rotate(-90deg); white-space: nowrap; }
+        .axis-x-right { right: -14px; top: 50%; transform: translateY(-50%) rotate(90deg); white-space: nowrap; }
 
         /* ツールチップ */
         #tooltip {
@@ -218,9 +179,6 @@
         #tooltip li::before { content: '●'; position: absolute; left: 0; top: 0.2rem; font-size: 0.7rem; color: #93c5fd; }
         #tooltip .source { font-size: 0.75rem; color: #cbd5e1; display: block; margin-top: 2px; text-align: right; }
 
-        .slide-graph { display: flex; flex-direction: column; height: 100%; }
-        .slide-graph .flex-grow { flex-grow: 1; }
-
     </style>
 </head>
 <body>
@@ -228,34 +186,26 @@
     <!-- ツールチップ用の要素 -->
     <div id="tooltip"></div>
 
-    <div class="slide-container">
+    <div class="page-container">
 
-        <!-- スライド 1: タイトル -->
-        <div class="slide active" style="background-color: #0d47a1; color: white; justify-content: center; align-items: center; text-align: center;">
+        <!-- セクション 1: タイトル -->
+        <div class="slide-content" style="background-color: #0d47a1; color: white; text-align: center;">
             <h1 class="text-5xl font-bold mb-4">人の成長戦略会議 議事録分析</h1>
             <h2 class="text-3xl">4象限による課題の分類と可視化</h2>
             <p class="mt-8 text-lg text-blue-100">（議事録まとめ資料に基づく）</p>
-            <div class="slide-footer" style="color: #bbdefb;">1 / 3</div>
         </div>
 
-        <!-- スライド 2: 4象限インタラクティブマップ -->
-        <div class="slide slide-graph"> 
+        <!-- セクション 2: 4象限インタラクティブマップ -->
+        <div class="slide-content slide-graph"> 
             <h1 class="text-2xl font-bold mb-2 text-gray-800 text-center">4象限 課題クラスターマップ</h1>
             <p class="text-center text-gray-600 text-sm mb-3">（バブルのサイズは全体（55件）に占める割合を示します）</p>
-            
-            <!-- ★ ラベル用のスペースを確保するために、flex-growコンテナにパディングを追加 -->
-            <div class="flex-grow relative" style="padding: 20px 140px;"> 
-                
-                <!-- Y-Axis Labels (gridの外側、padding領域に配置) -->
-                <div class="axis-label axis-y-top">マネジメント層の課題</div>
-                <div class="axis-label axis-y-bottom">現場層の課題</div>
-
-                <!-- X-Axis Labels (gridの外側、padding領域に配置) -->
-                <div class="axis-label axis-x-left">メンタル・士気・関係性</div>
-                <div class="axis-label axis-x-right">スキル・成長・育成</div>
-                
-                <div class="quadrant-grid"> <!-- ★ style="height: 100%; width: 100%;" をインラインから削除 (CSSで設定済) -->
-                    <!-- Axes Labels をここから削除 -->
+            <div class="relative"> <!-- このdivがグラフ領域 -->
+                <div class="quadrant-grid">
+                    <!-- Axes Labels -->
+                    <div class="axis-label axis-y-top">マネジメント層の課題</div>
+                    <div class="axis-label axis-y-bottom">現場層の課題</div>
+                    <div class="axis-label axis-x-left">メンタル・士気・関係性</div>
+                    <div class="axis-label axis-x-right">スキル・成長・育成</div>
 
                     <!-- 象限③: マネ×メンタル -->
                     <div class="quadrant quadrant-3">
@@ -350,11 +300,10 @@
                     </div>
                 </div>
             </div>
-            <div class="slide-footer">2 / 3</div>
         </div>
 
-        <!-- スライド 3: 総括 -->
-        <div class="slide">
+        <!-- セクション 3: 総括 -->
+        <div class="slide-content">
             <h1 class="text-3xl font-bold mb-6 text-gray-800">総括と傾向</h1>
             <div class="space-y-6 text-lg">
                 <div>
@@ -374,43 +323,11 @@
                     </ul>
                 </div>
             </div>
-            <div class="slide-footer">3 / 3</div>
         </div>
 
     </div>
 
     <script>
-        let currentSlide = 0;
-        const slides = document.querySelectorAll('.slide');
-        const totalSlides = slides.length;
-
-        function showSlide(index) {
-            slides.forEach((slide, i) => {
-                slide.classList.remove('active');
-                if (i === index) {
-                    slide.classList.add('active');
-                }
-            });
-        }
-
-        function nextSlide() {
-            currentSlide = (currentSlide + 1) % totalSlides;
-            showSlide(currentSlide);
-        }
-
-        function prevSlide() {
-            currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
-            showSlide(currentSlide);
-        }
-
-        document.addEventListener('keydown', (event) => {
-            if (event.key === 'ArrowRight' || event.key === ' ') {
-                nextSlide();
-            } else if (event.key === 'ArrowLeft') {
-                prevSlide();
-            }
-        });
-
         // --- バブルサイズとフォントサイズの動的設定 ---
         document.addEventListener('DOMContentLoaded', () => {
             const bubbles = document.querySelectorAll('.cluster-bubble');
@@ -433,7 +350,6 @@
                 bubble.style.fontSize = `${fontSize}px`;
             });
         });
-
 
         // --- ツールチップロジック ---
         const tooltip = document.getElementById('tooltip');
@@ -475,6 +391,7 @@
             let x = event.clientX + 15;
             let y = event.clientY + 15;
 
+            // 画面端からはみ出ないように位置を調整
             if (x + tooltip.offsetWidth > window.innerWidth - 20) {
                 x = event.clientX - tooltip.offsetWidth - 15;
             }
@@ -488,11 +405,7 @@
             tooltip.style.top = `${y}px`;
         }
         
-        // 最初のスライドを表示
-        showSlide(currentSlide);
     </script>
 </body>
 </html>
-
-
 
